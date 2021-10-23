@@ -2,25 +2,24 @@
 #include <iostream>
 #include <string.h>
 #include <arpa/inet.h>
+#include <netinet/in.h>
+#include <sys/socket.h>
+#include <unistd.h>
 
 #define PORT 6543
-
+#define BUF 1024
 //convert to exe:
     // g++ client.cpp -o client.exe
 //run exe
-    // ./client.exe 196.0.0.1 80
+    // ./client.exe 127.0.0.1 80
 
 //EINGABEFORMAT:
 //./twmailer-client <ip> <port>
 int main(int argc, char **argv){
-    //Testausgabe
-    std::cout << "Client" << std::endl;
-    std::cout << argv[1] << std::endl;
-    std::cout << argv[2] << std::endl;
-
     struct sockaddr_in address; //struct to work with addresses ports etc
-    int create_socket;
-
+    int create_socket, size;
+    char buffer[BUF];
+    bool isQuit;
     //Socket Creation
     if ((create_socket = socket(AF_INET, SOCK_STREAM, 0)) == -1) //socket of domain type IPv4(AF_INET), of type SOCK_STREAM(TCP reliable connection oriented) and automatically chosen protocol(0) ->returns -1 in case of errors
     {
@@ -51,7 +50,87 @@ int main(int argc, char **argv){
       return EXIT_FAILURE;
    }
 
-      printf("Connection with server (%s) established\n",
-          inet_ntoa(address.sin_addr));
+    std::cout << "Connection with server " << inet_ntoa(address.sin_addr) <<" established" << std::endl;
 
+    //Recieve data from socket
+    size = recv(create_socket, buffer, BUF - 1, 0); //reads BUF-1 bytes from socket to BUF
+    if (size == -1)
+    {
+        perror("recv error");
+    }
+    else if (size == 0)
+    {
+        std::cout << "Server closed remote socket" << std::endl;
+    }
+    else
+    {
+        buffer[size] = '\0';
+        std::cout << buffer;
+    }
+
+    //communication with server
+    do
+    {
+        std::cout << ">> ";
+        if (fgets(buffer, BUF, stdin) != NULL) //input, saved to buffer with maximum length of BUF
+        {
+            int size = strlen(buffer);
+            
+            // remove new-line signs from string at the end
+            if (buffer[size - 2] == '\r' && buffer[size - 1] == '\n')
+            {
+                size -= 2;
+                buffer[size] = 0;
+            }
+            else if (buffer[size - 1] == '\n')
+            {
+                --size;
+                buffer[size] = 0;
+            }
+            isQuit = strcmp(buffer, "quit") == 0;
+
+            if ((send(create_socket, buffer, size, 0)) == -1) 
+            {
+                perror("send error");
+                break;
+            }
+
+            size = recv(create_socket, buffer, BUF - 1, 0);
+            if (size == -1)
+            {
+                perror("recv error");
+                break;
+            }
+            else if (size == 0)
+            {
+                std::cout << "Server closed remote socket" << std::endl;
+                break;
+            }
+            else
+            {
+                buffer[size] = '\0';
+                std::cout << "<< " << buffer << std::endl;
+                if (strcmp("OK", buffer) != 0)
+                {
+                    fprintf(stderr, "<< Server error occured, abort\n");
+                    break;
+                }
+            }
+        }
+    } while (!isQuit);
+
+       // CLOSES THE DESCRIPTOR
+    if (create_socket != -1)
+    {
+        if (shutdown(create_socket, SHUT_RDWR) == -1)
+        {
+            // invalid in case the server is gone already
+            perror("shutdown create_socket"); 
+        }
+        if (close(create_socket) == -1)
+        {
+            perror("close create_socket");
+        }
+        create_socket = -1;
+    }
 }

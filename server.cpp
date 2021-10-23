@@ -8,6 +8,7 @@
 
 #define PORT 6543
 #define BUF 1024
+
 bool abortRequested = false;
 int new_socket = -1;
 int create_socket = -1;
@@ -19,10 +20,68 @@ void *clientCommunication(void *data)
     int *current_socket = (int *)data;
 
     strcpy(buffer, "Welcome to myserver!\r\nPlease enter your commands...\r\n");
-    if (send(*current_socket, buffer, strlen(buffer), 0) == -1)
+    if (send(*current_socket, buffer, strlen(buffer), 0) == -1) // send message to socket
     {
         perror("send failed");
         return NULL;
+    }
+
+    do
+    {
+        size = recv(*current_socket, buffer, BUF - 1, 0); //recieve message from socket and safe it to buffer
+        if (size == -1)
+        {
+            if (abortRequested)
+            {
+                perror("recv error after aborted");
+            }
+            else
+            {
+                perror("recv error");
+            }
+            break;
+        }
+
+        if (size == 0)
+        {
+            std::cout << "Client closed remote socket" << std::endl;
+            break;
+        }
+
+        // remove ugly debug message, because of the sent newline of client
+        if (buffer[size - 2] == '\r' && buffer[size - 1] == '\n')
+        {
+            size -= 2;
+        }
+        else if (buffer[size - 1] == '\n')
+        {
+            --size;
+        }
+
+        buffer[size] = '\0';
+        std::cout << "Message received: " << buffer << std::endl;
+
+
+
+        if (send(*current_socket, "OK", 3, 0) == -1) //send recieved message to socket
+        {
+            perror("send answer failed");
+            return NULL;
+        }
+    } while (strcmp(buffer, "quit") != 0 && !abortRequested);
+
+    // closes/frees the descriptor if not already
+    if (*current_socket != -1)
+    {
+        if (shutdown(*current_socket, SHUT_RDWR) == -1)
+        {
+            perror("shutdown new_socket");
+        }
+        if (close(*current_socket) == -1)
+        {
+            perror("close new_socket");
+        }
+        *current_socket = -1;
     }
 
     return NULL;
@@ -30,8 +89,7 @@ void *clientCommunication(void *data)
 
 void signalHandler(int sig){
     if(sig == SIGINT){
-
-    printf("abort Requested... "); // ignore error
+    std::cout << "abort Requested..." << std::endl;
       abortRequested = true;
 
       if (new_socket != -1)
@@ -71,12 +129,9 @@ void signalHandler(int sig){
 //run exe
     // ./server.exe 80 ...
 
-//EINGABEFORMAT:
+//?????????EINGABEFORMAT:
 //./twmailer-server <port> <mail-spool-directoryname>
-int main(void){
-    //Testausgabe   
-    std::cout << "Server" << std::endl;
-    
+int main(void){    
     socklen_t addrlen;
     struct sockaddr_in address, cliaddress;
     int reuseValue = 1;
@@ -138,7 +193,7 @@ int main(void){
 
     while (!abortRequested)
     {
-        printf("Waiting for connections...\n");
+        std::cout << "Waiting for connections..." << std::endl;
 
         //accept connection from client address
         addrlen = sizeof(struct sockaddr_in);
@@ -156,12 +211,11 @@ int main(void){
             }
             break;
         }
+    //                                      client address in ASCII                     port in host byte order
+        std::cout << "Client connected from " << inet_ntoa(cliaddress.sin_addr) << ":" << ntohs(cliaddress.sin_port) << "..." << std::endl;
 
-        printf("Client connected from %s:%d...\n",
-            inet_ntoa(cliaddress.sin_addr), //client address in ASCII
-            ntohs(cliaddress.sin_port)); //port in host byte order
-        
         clientCommunication(&new_socket); // returnValue can be ignored
         new_socket = -1;
     }
 }
+
