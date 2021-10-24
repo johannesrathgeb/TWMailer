@@ -5,6 +5,7 @@
 #include <string.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#include <fstream>
 
 #define PORT 6543
 #define BUF 1024
@@ -12,6 +13,54 @@
 bool abortRequested = false;
 int new_socket = -1;
 int create_socket = -1;
+char buffer[BUF];
+
+void saveToFile(char buffer[BUF]){
+    std::ofstream myFile;
+    myFile.open("test.txt", std::ios::app);
+    myFile << buffer << '\n';
+    myFile.close();
+    
+    std::cout << "!!Saved to file!!" << std::endl;
+}
+
+char* recieveMessage(void *data){
+    int size;
+    int *current_socket = (int *)data;
+    //char buffer[BUF];
+
+    size = recv(*current_socket, buffer, BUF - 1, 0); //recieve message from socket and safe it to buffer
+
+    if (buffer[size - 2] == '\r' && buffer[size - 1] == '\n')
+    {
+        size -= 2;
+    }
+    else if (buffer[size - 1] == '\n')
+    {
+        --size;
+    }
+
+    if (send(*current_socket, "OK", 3, 0) == -1) //send recieved message to socket
+    {
+        perror("send answer failed");
+        //return NULL;
+    }
+    return buffer;
+}
+void clientSEND(void *data){
+    int size;
+    int *current_socket = (int *)data;
+    //char buffer[BUF];
+    char *returnValue;
+    
+
+    returnValue = recieveMessage(&current_socket);
+    returnValue[size] = '\0';
+    std::cout << "Sender received: " << returnValue << std::endl;
+    std::string sender = returnValue;
+    //saveToFile(buffer);
+      
+}
 
 void *clientCommunication(void *data)
 {
@@ -59,16 +108,26 @@ void *clientCommunication(void *data)
         }
 
         buffer[size] = '\0';
+        if(strcmp(buffer, "SEND") == 0){
+            std::cout<<"SENDFUNCTION CALLED"<<std::endl;
+            clientSEND(&current_socket);
+        }
+        else if(strcmp(buffer, "QUIT") == 0){
+            abortRequested = true;
+        }
+
+
+
+        
         std::cout << "Message received: " << buffer << std::endl;
-
-
+        saveToFile(buffer);
 
         if (send(*current_socket, "OK", 3, 0) == -1) //send recieved message to socket
         {
             perror("send answer failed");
             return NULL;
         }
-    } while (strcmp(buffer, "quit") != 0 && !abortRequested);
+    } while (strcmp(buffer, "QUIT") != 0 && !abortRequested);
 
     // closes/frees the descriptor if not already
     if (*current_socket != -1)
