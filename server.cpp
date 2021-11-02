@@ -51,7 +51,7 @@ void clientSEND(void *data){
     //char buffer[BUF];
     char *returnValue;
 
-    
+
     if (send(*current_socket, "OK", 3, 0) == -1) //send recieved message to socket
     {
         perror("send failed");
@@ -109,6 +109,9 @@ void *clientCommunication(void *data)
         {
             --size;
         }
+
+
+        //std::cout << "SERVERSIDE BUFFER: " << buffer << std::endl;
 
         buffer[size] = '\0';
         if(strcmp(buffer, "SEND") == 0){
