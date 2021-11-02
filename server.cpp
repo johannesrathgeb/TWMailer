@@ -10,6 +10,7 @@
 
 #include <dirent.h>
 #include <filesystem>
+#include <sys/stat.h>
 
 #define PORT 6543
 #define BUF 1024
@@ -22,8 +23,8 @@ char buffer[BUF];
 void saveToFile(char buffer[BUF]){
 
     DIR* dir; 
-    DIR* userdir; 
     struct dirent *entry; 
+    bool folderexists = false; 
 
     std::string path = "messages";
     char* cpath = const_cast<char*>(path.c_str());
@@ -54,33 +55,24 @@ void saveToFile(char buffer[BUF]){
     char* cuserpath = const_cast<char*>(userpath.c_str());
 
 
-    std::cout << "1" << std::endl; 
-
-      while ((entry = readdir(dir)) != NULL) {
+    while ((entry = readdir(dir)) != NULL) {
         if (strcmp(entry->d_name, ".") != 0 && strcmp(entry->d_name, "..") != 0) {
             if(entry->d_type == 4) {
-                std::cout << "2" << std::endl; 
-
                 if(strcmp(entry->d_name,creceiver) == 0) {
-                    std::cout << "folder exists" << std::endl; 
-
-                    
-                    userdir = opendir(cuserpath);
-                    if(!userdir) {
-                        std::cout << "User Directory not found" << std::endl;
-                    } else {
-                    std::ofstream outfile ("text.txt");
+                    //std::cout << "folder exists" << std::endl; 
+                    folderexists = true; 
+                    std::ofstream outfile (userpath + "/text.txt");
                     outfile << buffer << std::endl;
-                    outfile.close(); 
-                    }
-                    
-                   
-                } else {
-                    std::cout << "gibts ned" << std::endl;  
-                }
+                    outfile.close();   
+                } 
             }
         }
     }
+
+    if(folderexists == false) {
+        mkdir(cuserpath, 0777);
+    }
+
     closedir(dir);
 
    
