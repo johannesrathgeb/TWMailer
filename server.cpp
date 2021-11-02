@@ -6,6 +6,10 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <fstream>
+#include <sstream>
+
+#include <dirent.h>
+#include <filesystem>
 
 #define PORT 6543
 #define BUF 1024
@@ -16,12 +20,79 @@ int create_socket = -1;
 char buffer[BUF];
 
 void saveToFile(char buffer[BUF]){
+
+    DIR* dir; 
+    DIR* userdir; 
+    struct dirent *entry; 
+
+    std::string path = "messages";
+    char* cpath = const_cast<char*>(path.c_str());
+    
+    char actualpath[PATH_MAX];
+
+    realpath(cpath, actualpath);
+
+    std::cout << "actual path: " << actualpath << std::endl; 
+
+    dir = opendir(actualpath);
+    if(!dir) {
+        std::cout << "Directory not found" << std::endl;
+    }
+
+    std::string receiver; 
+
+    std::string fullstring = (std::string) buffer; 
+    std::stringstream fullstringstream (fullstring); 
+
+    getline(fullstringstream, receiver, '\n'); 
+    getline(fullstringstream, receiver, '\n'); 
+    getline(fullstringstream, receiver, '\n'); 
+
+    char* creceiver = const_cast<char*>(receiver.c_str());
+    
+    std::string userpath = (std::string) actualpath + "/" + receiver;
+    char* cuserpath = const_cast<char*>(userpath.c_str());
+
+
+    std::cout << "1" << std::endl; 
+
+      while ((entry = readdir(dir)) != NULL) {
+        if (strcmp(entry->d_name, ".") != 0 && strcmp(entry->d_name, "..") != 0) {
+            if(entry->d_type == 4) {
+                std::cout << "2" << std::endl; 
+
+                if(strcmp(entry->d_name,creceiver) == 0) {
+                    std::cout << "folder exists" << std::endl; 
+
+                    
+                    userdir = opendir(cuserpath);
+                    if(!userdir) {
+                        std::cout << "User Directory not found" << std::endl;
+                    } else {
+                    std::ofstream outfile ("text.txt");
+                    outfile << buffer << std::endl;
+                    outfile.close(); 
+                    }
+                    
+                   
+                } else {
+                    std::cout << "gibts ned" << std::endl;  
+                }
+            }
+        }
+    }
+    closedir(dir);
+
+   
+
+    /*
     std::ofstream myFile;
     myFile.open("test.txt", std::ios::app);
     myFile << buffer << '\n';
     myFile.close();
     
     std::cout << "!!Saved to file!!" << std::endl;
+    */
 }
 
 char* recieveMessage(void *data){
@@ -110,11 +181,33 @@ void *clientCommunication(void *data)
             --size;
         }
 
-
+        //anker
         //std::cout << "SERVERSIDE BUFFER: " << buffer << std::endl;
 
         buffer[size] = '\0';
-        if(strcmp(buffer, "SEND") == 0){
+
+
+        std::string command = (std::string) buffer; 
+        char temp[BUF]; 
+        command = command.substr(0,command.find('\n'));
+        strcpy(temp, command.c_str());
+
+        //std::cout << "test---- " << buffer[0] << " " << selection << std::endl; 
+
+        switch(buffer[0]) {
+            case 'S':
+                std::cout << "SEND COMMAND" << std::endl; 
+                saveToFile(buffer); 
+                break; 
+            case 'Q': 
+                std::cout << "QUIT COMMAND" << std::endl; 
+                break; 
+            default:
+                std::cout << "INPUT ERROR" << std::endl; 
+                break; 
+        }
+
+        if(strcmp(temp, "SEND") == 0){
             clientSEND(current_socket);
         }
         else if(strcmp(buffer, "QUIT") == 0){
@@ -124,7 +217,7 @@ void *clientCommunication(void *data)
 
 
         
-        std::cout << "Message received: " << buffer << std::endl;
+        //std::cout << "Message received: " << buffer << std::endl;
         saveToFile(buffer);
 
         if (send(*current_socket, "OK", 3, 0) == -1) //send recieved message to socket
