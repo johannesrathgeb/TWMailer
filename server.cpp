@@ -28,9 +28,7 @@ char* recieveMessage(void *data){
     int size;
     int *current_socket = (int *)data;
     //char buffer[BUF];
-
     size = recv(*current_socket, buffer, BUF - 1, 0); //recieve message from socket and safe it to buffer
-
     if (buffer[size - 2] == '\r' && buffer[size - 1] == '\n')
     {
         size -= 2;
@@ -52,11 +50,16 @@ void clientSEND(void *data){
     int *current_socket = (int *)data;
     //char buffer[BUF];
     char *returnValue;
-    
 
-    returnValue = recieveMessage(&current_socket);
+    
+    if (send(*current_socket, "OK", 3, 0) == -1) //send recieved message to socket
+    {
+        perror("send failed");
+        //return NULL;
+    }
+    returnValue = recieveMessage(current_socket);
+    size = strlen(returnValue);
     returnValue[size] = '\0';
-    std::cout << "Sender received: " << returnValue << std::endl;
     std::string sender = returnValue;
     //saveToFile(buffer);
       
@@ -109,8 +112,7 @@ void *clientCommunication(void *data)
 
         buffer[size] = '\0';
         if(strcmp(buffer, "SEND") == 0){
-            std::cout<<"SENDFUNCTION CALLED"<<std::endl;
-            clientSEND(&current_socket);
+            clientSEND(current_socket);
         }
         else if(strcmp(buffer, "QUIT") == 0){
             abortRequested = true;
@@ -272,9 +274,7 @@ int main(void){
         }
     //                                      client address in ASCII                     port in host byte order
         std::cout << "Client connected from " << inet_ntoa(cliaddress.sin_addr) << ":" << ntohs(cliaddress.sin_port) << "..." << std::endl;
-
         clientCommunication(&new_socket); // returnValue can be ignored
         new_socket = -1;
     }
 }
-
