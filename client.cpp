@@ -151,6 +151,9 @@ void communicateWithServer(){
             
             strcpy(buffer, fullstring.c_str());
         }
+        else if((std::string) input == "QUIT\n"){
+            strcpy(buffer, input);
+        }
 
         if (buffer != NULL) //input, saved to buffer with maximum length of BUF
         {
@@ -167,7 +170,7 @@ void communicateWithServer(){
                 --size;
                 buffer[size] = 0;
             }
-            isQuit = strcmp(buffer, "quit") == 0;
+            isQuit = strcmp(buffer, "QUIT") == 0;
 
             if ((send(create_socket, buffer, size, 0)) == -1) 
             {

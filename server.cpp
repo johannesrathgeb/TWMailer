@@ -124,8 +124,7 @@ void readCommand(char buffer[BUF], void *data){
         std::getline(file, subject);
         while(std::getline(file, tmp)){
             message.append(tmp + '\n');
-            
-        };
+        }
 
         //fullMessage = "OK" + '\n';
         fullMessage.append("Sender: "+sender + '\n'+  "Reciever: "+ receiver + '\n'+ "Subject: " + subject + '\n'+ "Message: " + message + '\n');
