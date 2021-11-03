@@ -7,6 +7,7 @@
 #include <arpa/inet.h>
 #include <fstream>
 #include <sstream>
+#include <string>
 
 #include <dirent.h>
 #include <filesystem>
@@ -23,7 +24,10 @@ int create_socket = -1;
 void saveToFile(char buffer[BUF]){
 
     DIR* dir; 
+    DIR* dir2; 
     struct dirent *entry; 
+    struct dirent *entry2; 
+
     bool folderexists = false; 
 
     std::cout << "HIER: " << buffer << std::endl;  
@@ -69,7 +73,22 @@ void saveToFile(char buffer[BUF]){
                 if(strcmp(entry->d_name,creceiver) == 0) {
                     //std::cout << "folder exists" << std::endl; 
                     folderexists = true; 
-                    std::ofstream outfile (userpath + "/text.txt");
+                    
+                  
+                    std::fstream file(userpath + "/index.txt");
+                    std::string str; 
+                    std::getline(file, str);
+
+                    int msgnumber = std::stoi(str);
+                    msgnumber += 1; 
+                    str = std::to_string(msgnumber);
+                    file.close(); 
+
+                    std::ofstream file2(userpath + "/index.txt", std::ofstream::trunc);
+                    file2 << str << '\n';
+                    file2.close(); 
+
+                    std::ofstream outfile (userpath + "/" + str + ".txt");
                     outfile << buffer << std::endl;
                     outfile.close();   
                 } 
@@ -83,6 +102,10 @@ void saveToFile(char buffer[BUF]){
         std::ofstream outfile (userpath + "/index.txt");
         outfile << 0 << std::endl;
         outfile.close();   
+
+        std::ofstream outfile2 (userpath + "/0.txt");
+        outfile2 << buffer << std::endl;
+        outfile2.close();   
     }
 
     closedir(dir);
