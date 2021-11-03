@@ -47,23 +47,30 @@ void communicateWithServer(){
         
         if((std::string) input == "SEND\n") {
             fullstring = fullstring + input; 
-            std::cout << "Sender:" << std::endl; 
+            std::cout << "Sender:" << std::endl << ">> "; 
             fgets(input, BUF, stdin);
             fullstring = fullstring + input; 
-            std::cout << "Receiver:" << std::endl; 
+            std::cout << "Receiver:" << std::endl << ">> "; 
             fgets(input, BUF, stdin);
             fullstring = fullstring + input;
-            std::cout << "Subject:" << std::endl; 
+            std::cout << "Subject:" << std::endl << ">> "; 
             fgets(input, BUF, stdin);
             fullstring = fullstring + input;
-            std::cout << "Message:" << std::endl; 
+            std::cout << "Message:" << std::endl << ">> "; 
             
             while((std::string) fgets(input, BUF, stdin) != ".\n") {
                 fullstring = fullstring + input;
             }
             
             strcpy(buffer, fullstring.c_str());
+        }
+        else if((std::string) input == "LIST\n"){
+            fullstring = fullstring + input;
+            std::cout << "Username:" << std::endl << ">> ";
+            fgets(input, BUF, stdin);
 
+            fullstring = fullstring + input;
+            strcpy (buffer, fullstring.c_str());
         }
 
         if (buffer != NULL) //input, saved to buffer with maximum length of BUF

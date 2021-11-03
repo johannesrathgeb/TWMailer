@@ -19,9 +19,78 @@
 bool abortRequested = false;
 int new_socket = -1;
 int create_socket = -1;
-//char buffer[BUF];
+char buffer[BUF];
 
-void saveToFile(char buffer[BUF]){
+void listCommand(char buffer[BUF], void *data){
+    int *current_socket = (int *) data;
+    int fileCounter = 0;
+    DIR* dir;
+    struct dirent *entry;
+    bool folderexists = false;
+    std::string path = "messages";
+    char* cpath = const_cast<char*>(path.c_str()); //convert path to char* in order to work for realpath()
+    
+    char actualpath[PATH_MAX];
+
+    realpath(cpath, actualpath); //absolute path for creation of user folders
+
+    std::string user; //receiver of msg
+
+    std::string fullstring = (std::string) buffer; //buffer with full message in string version 
+    
+    std::stringstream fullstringstream (fullstring); //as stringstream for getline
+    getline(fullstringstream, user, '\n'); 
+    getline(fullstringstream, user, '\n'); 
+
+    fullstring.erase(0, 5); //erase LIST because unnecessary in email
+    strcpy(buffer, fullstring.c_str()); //update buffer
+
+    char* cuser = const_cast<char*>(user.c_str());
+    
+    std::string userpath = (std::string) actualpath + "/" + user;
+    char* cuserpath = const_cast<char*>(userpath.c_str());
+
+    dir = opendir(cuserpath);
+    if(!dir) {
+        std::cout << "Directory not found" << std::endl;
+    }
+
+
+    while ((entry = readdir(dir)) != NULL) {
+        if (strcmp(entry->d_name, ".") != 0 && strcmp(entry->d_name, "..") != 0) {
+            //std::cout << entry->d_name << std::endl;
+            fileCounter++;
+        }
+    }
+    fileCounter--;
+    std::cout << fileCounter << std::endl;
+    rewinddir(dir);
+
+    while((entry = readdir(dir)) != NULL){
+        if(strcmp(entry->d_name, ".") != 0 && strcmp(entry->d_name, "..") != 0 && strcmp (entry->d_name, "index.txt") !=0){
+            std::cout << entry->d_name << std::endl;
+            /*std::fstream file(userpath + "/index.txt");
+            std::string str; 
+            std::getline(file, str);
+            int msgnumber = std::stoi(str);
+            msgnumber += 1; 
+            str = std::to_string(msgnumber);
+            file.close(); 
+
+            std::ofstream file2(userpath + "/index.txt", std::ofstream::trunc);
+            file2 << str << '\n';
+            file2.close(); 
+
+            //create file for new email
+            std::ofstream outfile (userpath + "/" + str + ".txt");
+            outfile << buffer << std::endl;
+            outfile.close();   */
+        }
+    }
+}
+
+
+void sendCommand(char buffer[BUF]){
 
     DIR* dir; 
     struct dirent *entry; 
@@ -58,8 +127,8 @@ void saveToFile(char buffer[BUF]){
 
     char* creceiver = const_cast<char*>(receiver.c_str());
     
-    std::string userpath = (std::string) actualpath + "/" + receiver;
-    char* cuserpath = const_cast<char*>(userpath.c_str());
+    std::string receiverpath = (std::string) actualpath + "/" + receiver;
+    char* creceiverpath = const_cast<char*>(receiverpath.c_str());
 
 
     while ((entry = readdir(dir)) != NULL) {
@@ -69,7 +138,7 @@ void saveToFile(char buffer[BUF]){
                     folderexists = true; 
                     
                     //increment int of index file by one to keep track of received emails
-                    std::fstream file(userpath + "/index.txt");
+                    std::fstream file(receiverpath + "/index.txt");
                     std::string str; 
                     std::getline(file, str);
                     int msgnumber = std::stoi(str);
@@ -77,12 +146,12 @@ void saveToFile(char buffer[BUF]){
                     str = std::to_string(msgnumber);
                     file.close(); 
 
-                    std::ofstream file2(userpath + "/index.txt", std::ofstream::trunc);
+                    std::ofstream file2(receiverpath + "/index.txt", std::ofstream::trunc);
                     file2 << str << '\n';
                     file2.close(); 
 
                     //create file for new email
-                    std::ofstream outfile (userpath + "/" + str + ".txt");
+                    std::ofstream outfile (receiverpath + "/" + str + ".txt");
                     outfile << buffer << std::endl;
                     outfile.close();   
                 } 
@@ -92,15 +161,15 @@ void saveToFile(char buffer[BUF]){
 
     if(folderexists == false) {
         
-        mkdir(cuserpath, 0777); //create directory (0777 = file permission in linux)
+        mkdir(creceiverpath, 0777); //create directory (0777 = file permission in linux)
 
         //create new index
-        std::ofstream outfile (userpath + "/index.txt");
+        std::ofstream outfile (receiverpath + "/index.txt");
         outfile << 0 << std::endl;
         outfile.close();   
 
         //create first file
-        std::ofstream outfile2 (userpath + "/0.txt");
+        std::ofstream outfile2 (receiverpath + "/0.txt");
         outfile2 << buffer << std::endl;
         outfile2.close();   
     }
@@ -109,7 +178,7 @@ void saveToFile(char buffer[BUF]){
 
 }
 
-/*
+
 char* recieveMessage(void *data){
     int size;
     int *current_socket = (int *)data;
@@ -130,26 +199,6 @@ char* recieveMessage(void *data){
         //return NULL;
     }
     return buffer;
-}
-*/
-void clientSEND(void *data){
-    int size;
-    int *current_socket = (int *)data;
-    //char buffer[BUF];
-    char *returnValue;
-
-
-    if (send(*current_socket, "OK", 3, 0) == -1) //send recieved message to socket
-    {
-        perror("send failed");
-        //return NULL;
-    }
-    //returnValue = recieveMessage(current_socket);
-    size = strlen(returnValue);
-    returnValue[size] = '\0';
-    std::string sender = returnValue;
-    //saveToFile(buffer);
-      
 }
 
 void *clientCommunication(void *data)
@@ -215,8 +264,12 @@ void *clientCommunication(void *data)
         switch(buffer[0]) {
             case 'S':
                 std::cout << "SEND COMMAND" << std::endl; 
-                saveToFile(buffer); 
+                sendCommand(buffer); 
                 break; 
+            case 'L':
+                std::cout << "LIST COMMAND" << std::endl;
+                listCommand(buffer, current_socket);
+                break;
             case 'Q': 
                 std::cout << "QUIT COMMAND" << std::endl; 
                 break; 
@@ -225,10 +278,10 @@ void *clientCommunication(void *data)
                 break; 
         }
 
-        if(strcmp(temp, "SEND") == 0){
+        /*if(strcmp(temp, "SEND") == 0){
             clientSEND(current_socket);
-        }
-        else if(strcmp(buffer, "QUIT") == 0){
+        }*/
+        if(strcmp(buffer, "QUIT") == 0){
             abortRequested = true;
         }
 
@@ -263,15 +316,15 @@ void signalHandler(int sig){
 
       if (new_socket != -1)
       {
-         if (shutdown(new_socket, SHUT_RDWR) == -1)
-         {
-            perror("shutdown new_socket");
-         }
-         if (close(new_socket) == -1)
-         {
-            perror("close new_socket");
-         }
-         new_socket = -1;
+        if (shutdown(new_socket, SHUT_RDWR) == -1)
+        {
+        perror("shutdown new_socket");
+        }
+        if (close(new_socket) == -1)
+        {
+        perror("close new_socket");
+        }
+        new_socket = -1;
       }
 
       if (create_socket != -1)

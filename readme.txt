@@ -13,6 +13,7 @@ client.cpp:
 
 
 server.cpp: 
+//fixed i guess probiers nochmal vlt hast irgendan speziellen fall aufgrufen aber ansonsten passts
 -Problem: ich glaub du hast einen buffer in einer Funktion und global erstellt, der gleich benannt ist; 
 hat beim erstellen von mehr als einer email beim übergeben vom client zum server für Fehler gesorgt, 
 deswegen hab ich den globalen Buffer und die receiveMessage mal auskommentiert. das müsst noch gefixed werden. 
@@ -26,3 +27,5 @@ müsst ma uns morgen noch anschauen.
 
 -vll das mit der Porteingabe am Anfang noch ändern, glaub das sollt nicht auf default laufen aber ka
 -<mail-spool-directoryname> noch hinzufügen
+
+-des is legit des witzigste file ever, wie du des oise auf krampf hochdeutsch schreibst
