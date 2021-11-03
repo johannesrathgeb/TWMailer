@@ -15,8 +15,6 @@ bool charValidation(char input[BUF]) {
 
     for(int i = 0; i < strlen(input) - 1; i++) {
         
-        //std::cout << "B: " << (int) input[i] - '0' << std::endl; 
-
         if(islower(input[i]) || ((int) input[i] - '0' >= 0 && (int) input[i] - '0' <= 9 )) {
         } else {
             return false; 
@@ -24,6 +22,20 @@ bool charValidation(char input[BUF]) {
     }
     return true; 
 }
+
+bool checkIfNumber(char input[BUF]) {
+    
+    std::cout << "MOINSEN" << std::endl; 
+    for(int i = 0; i < strlen(input) - 1; i++) {
+
+        if((int) input[i] - '0' >= 0 && (int) input[i] - '0' <= 9 ) {
+        } else {
+            return false; 
+        }
+    }
+    return true; 
+}
+
 
 void communicateWithServer(){
     int size;
@@ -49,6 +61,7 @@ void communicateWithServer(){
         //communication with server
     do
     {
+        std::cout << "<SEND|LIST|READ|DEL|QUIT>" << std::endl; 
         std::cout << ">> ";
         
         char input[BUF]; 
@@ -60,6 +73,7 @@ void communicateWithServer(){
         
         bool exitloop = false; 
         bool waitForOk = false;
+
         do {
             fgets(input, BUF, stdin);
             std::cout << "INPUT:" << input << std::endl; 
@@ -68,7 +82,6 @@ void communicateWithServer(){
                 exitloop = true; 
             } else {
                 std::cout << "Invalid Input. <SEND|LIST|READ|DEL|QUIT>" << std::endl; 
-                std::cout << strlen(input) << std::endl; 
             }
 
         } while(exitloop == false);
@@ -77,19 +90,19 @@ void communicateWithServer(){
             fullstring = fullstring + input; 
 
             do {
-                std::cout << "Sender(max. 8 characters):" << std::endl << ">> "; 
+                std::cout << "Sender(max. 8 characters [a-z][0-9]):" << std::endl << ">> "; 
                 fgets(input, BUF, stdin);
             } while(strlen(input) > 9 || !charValidation(input)); //anker
             fullstring = fullstring + input; 
 
             do {
-                std::cout << "Receiver:" << std::endl << ">> "; 
+                std::cout << "Receiver(max. 8 characters [a-z][0-9]):" << std::endl << ">> "; 
                 fgets(input, BUF, stdin);
             } while(strlen(input) > 9 || !charValidation(input));
             fullstring = fullstring + input;
 
             do {
-                std::cout << "Subject:" << std::endl << ">> "; 
+                std::cout << "Subject(max. 80 characters):" << std::endl << ">> "; 
                 fgets(input, BUF, stdin);
             } while(strlen(input) > 81);
             fullstring = fullstring + input;
@@ -128,9 +141,14 @@ void communicateWithServer(){
             std::cout << "Username:" << std::endl << ">> "; 
             fgets(input, BUF, stdin);
             fullstring = fullstring + input; 
+            
+            do {
             std::cout << "Message Number:" << std::endl << ">> "; 
             fgets(input, BUF, stdin);
+            } while(!checkIfNumber(input));
+
             fullstring = fullstring + input; 
+            
             strcpy(buffer, fullstring.c_str());
         }
 

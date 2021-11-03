@@ -26,6 +26,4 @@ müsst ma uns morgen noch anschauen.
 -makefile
 
 -vll das mit der Porteingabe am Anfang noch ändern, glaub das sollt nicht auf default laufen aber ka
--<mail-spool-directoryname> noch hinzufügen
-
 -des is legit des witzigste file ever, wie du des oise auf krampf hochdeutsch schreibst

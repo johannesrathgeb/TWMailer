@@ -310,10 +310,7 @@ void *clientCommunication(void *data)
 
     do
     {
-        std::cout << "begin again" << std::endl;
         size = recv(*current_socket, buffer, BUF - 1, 0); //recieve message from socket and safe it to buffer
-
-        std::cout << "SERVERSIDE: " << buffer << std::endl;  
 
         if (size == -1)
         {
@@ -358,7 +355,6 @@ void *clientCommunication(void *data)
         //switch for commands
         switch(buffer[0]) {
             case 'S':
-                std::cout << "SEND COMMAND" << std::endl; 
                 sendCommand(buffer); 
                 if (send(*current_socket, "OK", 3, 0) == -1) //send recieved message to socket
                 {
@@ -367,15 +363,12 @@ void *clientCommunication(void *data)
                 }
                 break; 
             case 'R':
-                std::cout << "READ COMMAND" << std::endl;
                 readCommand(buffer, current_socket);
                 break;
             case 'L':
-                std::cout << "LIST COMMAND" << std::endl;
                 listCommand(buffer, current_socket);
                 break;
             case 'D':
-                std::cout << "DELETE COMMAND" << std::endl;
                 deleteCommand(buffer);
                 if (send(*current_socket, "OK", 3, 0) == -1) //send recieved message to socket
                 {
@@ -384,7 +377,6 @@ void *clientCommunication(void *data)
                 }
                 break;
             case 'Q': 
-                std::cout << "QUIT COMMAND" << std::endl; 
                 abortRequested = true;
                 break; 
             default:
@@ -460,7 +452,7 @@ int main(int argc, char **argv){
     struct sockaddr_in address, cliaddress;
     int reuseValue = 1;
     dirName = argv[2];
-    std::cout << dirName << std::endl;
+
     //interacative attention signal tested on errors
     if (signal(SIGINT, signalHandler) == SIG_ERR)
     {
