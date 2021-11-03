@@ -38,7 +38,7 @@ void communicateWithServer(){
         std::cout << ">> ";
         
         char input[BUF]; 
-        std::string fullstring; 
+        std::string fullstring = ""; 
 
         fgets(input, BUF, stdin);
         std::cout << "INPUT:" << input << std::endl; 
@@ -60,10 +60,12 @@ void communicateWithServer(){
                 fullstring = fullstring + input;
             }
             
-
             //std::cout << "Fullstring: " << fullstring << std::endl;
             strcpy(buffer, fullstring.c_str());
-            
+
+            //std::cout << "CLIENT: " << buffer << std::endl; 
+
+
             //std::cout << "BUFFER: " << buffer << std::endl; 
         }
 

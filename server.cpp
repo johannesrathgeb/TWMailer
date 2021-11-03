@@ -18,13 +18,15 @@
 bool abortRequested = false;
 int new_socket = -1;
 int create_socket = -1;
-char buffer[BUF];
+//char buffer[BUF];
 
 void saveToFile(char buffer[BUF]){
 
     DIR* dir; 
     struct dirent *entry; 
     bool folderexists = false; 
+
+    std::cout << "HIER: " << buffer << std::endl;  
 
     std::string path = "messages";
     char* cpath = const_cast<char*>(path.c_str());
@@ -33,7 +35,7 @@ void saveToFile(char buffer[BUF]){
 
     realpath(cpath, actualpath);
 
-    std::cout << "actual path: " << actualpath << std::endl; 
+    //std::cout << "actual path: " << actualpath << std::endl; 
 
     dir = opendir(actualpath);
     if(!dir) {
@@ -43,11 +45,17 @@ void saveToFile(char buffer[BUF]){
     std::string receiver; 
 
     std::string fullstring = (std::string) buffer; 
+    
     std::stringstream fullstringstream (fullstring); 
+
 
     getline(fullstringstream, receiver, '\n'); 
     getline(fullstringstream, receiver, '\n'); 
     getline(fullstringstream, receiver, '\n'); 
+
+    fullstring.erase(0, 5);
+    strcpy(buffer, fullstring.c_str());
+
 
     char* creceiver = const_cast<char*>(receiver.c_str());
     
@@ -71,6 +79,10 @@ void saveToFile(char buffer[BUF]){
 
     if(folderexists == false) {
         mkdir(cuserpath, 0777);
+
+        std::ofstream outfile (userpath + "/index.txt");
+        outfile << 0 << std::endl;
+        outfile.close();   
     }
 
     closedir(dir);
@@ -87,6 +99,7 @@ void saveToFile(char buffer[BUF]){
     */
 }
 
+/*
 char* recieveMessage(void *data){
     int size;
     int *current_socket = (int *)data;
@@ -108,6 +121,7 @@ char* recieveMessage(void *data){
     }
     return buffer;
 }
+*/
 void clientSEND(void *data){
     int size;
     int *current_socket = (int *)data;
@@ -120,7 +134,7 @@ void clientSEND(void *data){
         perror("send failed");
         //return NULL;
     }
-    returnValue = recieveMessage(current_socket);
+    //returnValue = recieveMessage(current_socket);
     size = strlen(returnValue);
     returnValue[size] = '\0';
     std::string sender = returnValue;
@@ -144,6 +158,9 @@ void *clientCommunication(void *data)
     do
     {
         size = recv(*current_socket, buffer, BUF - 1, 0); //recieve message from socket and safe it to buffer
+
+        std::cout << "SERVERSIDE: " << buffer << std::endl;  
+
         if (size == -1)
         {
             if (abortRequested)
@@ -210,7 +227,7 @@ void *clientCommunication(void *data)
 
         
         //std::cout << "Message received: " << buffer << std::endl;
-        saveToFile(buffer);
+        //saveToFile(buffer);
 
         if (send(*current_socket, "OK", 3, 0) == -1) //send recieved message to socket
         {
