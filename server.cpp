@@ -89,6 +89,63 @@ void listCommand(char buffer[BUF], void *data){
     memset(buffer, 0, strlen(buffer));
 }
 
+void readCommand(char buffer[BUF], void *data){
+    int *current_socket = (int *) data;
+    DIR* dir;
+    struct dirent *entry;
+    bool folderexists = false;
+    std::string path = "messages";
+    std::string fullMessage;
+    char* cpath = const_cast<char*>(path.c_str()); //convert path to char* in order to work for realpath()
+    
+    char actualpath[PATH_MAX];
+
+    realpath(cpath, actualpath); //absolute path for creation of user folders
+
+    std::string user, messageNumber; //receiver of msg
+
+    std::string fullstring = (std::string) buffer; //buffer with full message in string version 
+    
+    std::stringstream fullstringstream (fullstring); //as stringstream for getline
+    getline(fullstringstream, user, '\n'); 
+    getline(fullstringstream, user, '\n');
+    getline(fullstringstream, messageNumber, '\n'); 
+
+    fullstring.erase(0, 5); //erase LIST because unnecessary in email
+    strcpy(buffer, fullstring.c_str()); //update buffer
+
+    char* cuser = const_cast<char*>(user.c_str());
+    
+    std::string userpath = (std::string) actualpath + "/" + user;
+    char* cuserpath = const_cast<char*>(userpath.c_str());
+
+    dir = opendir(cuserpath);
+    if(!dir) {
+        std::cout << "Directory not found" << std::endl;
+    }
+
+    std::fstream file(userpath + "/" + messageNumber + ".txt");
+    if(file.is_open()){
+        std::string sender, receiver, subject, message; 
+        std::getline(file, sender);
+        std::getline(file, receiver);
+        std::getline(file, subject);
+        std::getline(file, message);
+        //fullMessage = "OK" + '\n';
+        fullMessage.append("Sender: "+sender + '\n'+  "Reciever: "+ receiver + '\n'+ "Subject: " + subject + '\n'+ "Message: " + message + '\n');
+        file.close(); 
+    }
+
+
+
+    if (send(*current_socket, fullMessage.c_str(), strlen(fullMessage.c_str()), 0) == -1) //send recieved message to socket
+    {
+        perror("send answer failed");
+        //return NULL;
+    }
+    memset(buffer, 0, strlen(buffer)); 
+}
+
 void deleteCommand(char buffer[BUF]){ 
     DIR* dir; 
     struct dirent *entry; 
@@ -312,6 +369,10 @@ void *clientCommunication(void *data)
                     return NULL;
                 }
                 break; 
+            case 'R':
+                std::cout << "READ COMMAND" << std::endl;
+                readCommand(buffer, current_socket);
+                break;
             case 'L':
                 std::cout << "LIST COMMAND" << std::endl;
                 listCommand(buffer, current_socket);

@@ -59,6 +59,7 @@ void communicateWithServer(){
         //TODO: input/error handling
         
         bool exitloop = false; 
+        bool waitForOk = false;
         do {
             fgets(input, BUF, stdin);
             std::cout << "INPUT:" << input << std::endl; 
@@ -71,7 +72,7 @@ void communicateWithServer(){
             }
 
         } while(exitloop == false);
-
+        waitForOk = true;
         if((std::string) input == "SEND\n") {
             fullstring = fullstring + input; 
 
@@ -100,6 +101,17 @@ void communicateWithServer(){
             
             strcpy(buffer, fullstring.c_str());
         }
+        else if((std::string) input == "READ\n"){
+            fullstring = fullstring + input;
+            std::cout << "Username:" << std::endl << ">> ";
+            fgets(input, BUF, stdin);
+            fullstring = fullstring + input;
+            std::cout << "Message Number:" << std::endl << ">> ";
+            fgets(input, BUF, stdin);
+            fullstring = fullstring + input;
+            strcpy (buffer, fullstring.c_str());
+            waitForOk = false;
+        }
         else if((std::string) input == "LIST\n"){
             fullstring = fullstring + input;
 
@@ -109,6 +121,7 @@ void communicateWithServer(){
 
             fullstring = fullstring + input;
             strcpy (buffer, fullstring.c_str());
+            waitForOk = false;
         } 
         else if((std::string) input == "DEL\n") { 
             fullstring = fullstring + input; 
@@ -159,10 +172,12 @@ void communicateWithServer(){
             {
                 buffer[size] = '\0';
                 std::cout << "<< " << buffer << std::endl;
-                if (strcmp("OK", buffer) != 0)
-                {
-                    fprintf(stderr, "<< Server error occured, abort\n");
-                    break;
+                if(waitForOk){
+                    if (strcmp("OK", buffer) != 0)
+                    {
+                        fprintf(stderr, "<< Server error occured, abort\n");
+                        break;
+                    }
                 }
             }
             memset(buffer, 0, strlen(buffer));
