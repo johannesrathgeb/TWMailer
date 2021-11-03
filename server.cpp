@@ -20,6 +20,7 @@ bool abortRequested = false;
 int new_socket = -1;
 int create_socket = -1;
 char buffer[BUF];
+std::string dirName;
 
 void listCommand(char buffer[BUF], void *data){
     int *current_socket = (int *) data;
@@ -28,8 +29,7 @@ void listCommand(char buffer[BUF], void *data){
     DIR* dir;
     struct dirent *entry;
     bool folderexists = false;
-    std::string path = "messages";
-    char* cpath = const_cast<char*>(path.c_str()); //convert path to char* in order to work for realpath()
+    char* cpath = const_cast<char*>(dirName.c_str()); //convert path to char* in order to work for realpath()
     
     char actualpath[PATH_MAX];
 
@@ -94,9 +94,8 @@ void readCommand(char buffer[BUF], void *data){
     DIR* dir;
     struct dirent *entry;
     bool folderexists = false;
-    std::string path = "messages";
     std::string fullMessage;
-    char* cpath = const_cast<char*>(path.c_str()); //convert path to char* in order to work for realpath()
+    char* cpath = const_cast<char*>(dirName.c_str()); //convert path to char* in order to work for realpath()
     
     char actualpath[PATH_MAX];
 
@@ -154,8 +153,7 @@ void deleteCommand(char buffer[BUF]){
 
     std::string username;
     std::string messageid; 
-    std::string path = "messages";
-    char* cpath = const_cast<char*>(path.c_str()); //convert path to char* in order to work for realpath()
+    char* cpath = const_cast<char*>(dirName.c_str()); //convert path to char* in order to work for realpath()
     
     char actualpath[PATH_MAX];
 
@@ -216,8 +214,7 @@ void sendCommand(char buffer[BUF]){
 
     bool folderexists = false; 
 
-    std::string path = "messages";
-    char* cpath = const_cast<char*>(path.c_str()); //convert path to char* in order to work for realpath()
+    char* cpath = const_cast<char*>(dirName.c_str()); //convert path to char* in order to work for realpath()
     
     char actualpath[PATH_MAX];
 
@@ -388,13 +385,11 @@ void *clientCommunication(void *data)
                 break;
             case 'Q': 
                 std::cout << "QUIT COMMAND" << std::endl; 
+                abortRequested = true;
                 break; 
             default:
                 std::cout << "INPUT ERROR" << std::endl; //should never happen due to clientside input validation
                 break; 
-        }
-        if(strcmp(buffer, "QUIT") == 0){
-            abortRequested = true;
         }
         memset(buffer, 0, strlen(buffer));
     } while (strcmp(buffer, "QUIT") != 0 && !abortRequested);
@@ -460,11 +455,12 @@ void signalHandler(int sig){
 
 //?????????EINGABEFORMAT:
 //./twmailer-server <port> <mail-spool-directoryname>
-int main(void){    
+int main(int argc, char **argv){    
     socklen_t addrlen;
     struct sockaddr_in address, cliaddress;
     int reuseValue = 1;
-
+    dirName = argv[2];
+    std::cout << dirName << std::endl;
     //interacative attention signal tested on errors
     if (signal(SIGINT, signalHandler) == SIG_ERR)
     {
