@@ -109,7 +109,8 @@ void communicateWithServer(){
 
             fullstring = fullstring + input;
             strcpy (buffer, fullstring.c_str());
-        } else if((std::string) input == "DEL\n") { 
+        } 
+        else if((std::string) input == "DEL\n") { 
             fullstring = fullstring + input; 
             std::cout << "Username:" << std::endl << ">> "; 
             fgets(input, BUF, stdin);

@@ -319,6 +319,11 @@ void *clientCommunication(void *data)
             case 'D':
                 std::cout << "DELETE COMMAND" << std::endl;
                 deleteCommand(buffer);
+                if (send(*current_socket, "OK", 3, 0) == -1) //send recieved message to socket
+                {
+                    perror("send answer failed");
+                    return NULL;
+                }
                 break;
             case 'Q': 
                 std::cout << "QUIT COMMAND" << std::endl; 
@@ -327,10 +332,6 @@ void *clientCommunication(void *data)
                 std::cout << "INPUT ERROR" << std::endl; //should never happen due to clientside input validation
                 break; 
         }
-
-        /*if(strcmp(temp, "SEND") == 0){
-            clientSEND(current_socket);
-        }*/
         if(strcmp(buffer, "QUIT") == 0){
             abortRequested = true;
         }
