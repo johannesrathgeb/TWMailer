@@ -118,12 +118,13 @@ void readCommand(char buffer[BUF], void *data){
 
     std::fstream file(userpath + "/" + messageNumber + ".txt");
     if(file.is_open()){
-        std::string sender, receiver, subject, message; 
+        std::string sender, receiver, subject, message, tmp; 
         std::getline(file, sender);
         std::getline(file, receiver);
         std::getline(file, subject);
-        
-        while(std::getline(file, message));
+        while(std::getline(file, tmp)){
+            message.append(tmp);
+        };
 
         //fullMessage = "OK" + '\n';
         fullMessage.append("Sender: "+sender + '\n'+  "Reciever: "+ receiver + '\n'+ "Subject: " + subject + '\n'+ "Message: " + message + '\n');
