@@ -71,6 +71,15 @@ void communicateWithServer(){
 
             fullstring = fullstring + input;
             strcpy (buffer, fullstring.c_str());
+        } else if((std::string) input == "DEL\n") { //anker
+            fullstring = fullstring + input; 
+            std::cout << "Username:" << std::endl << ">> "; 
+            fgets(input, BUF, stdin);
+            fullstring = fullstring + input; 
+            std::cout << "Message Number:" << std::endl << ">> "; 
+            fgets(input, BUF, stdin);
+            fullstring = fullstring + input; 
+            strcpy(buffer, fullstring.c_str());
         }
 
         if (buffer != NULL) //input, saved to buffer with maximum length of BUF

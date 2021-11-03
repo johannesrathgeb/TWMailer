@@ -89,6 +89,69 @@ void listCommand(char buffer[BUF], void *data){
     }
 }
 
+void deleteCommand(char buffer[BUF]){ 
+    DIR* dir; 
+    struct dirent *entry; 
+
+    bool folderexists = false; 
+
+    std::string username;
+    std::string messageid; 
+    std::string path = "messages";
+    char* cpath = const_cast<char*>(path.c_str()); //convert path to char* in order to work for realpath()
+    
+    char actualpath[PATH_MAX];
+
+    realpath(cpath, actualpath); //absolute path
+
+
+    dir = opendir(actualpath);
+    if(!dir) {
+        std::cout << "Directory not found" << std::endl;
+    }
+
+    std::string fullstring = (std::string) buffer; //buffer with full message in string version 
+    
+    std::stringstream fullstringstream (fullstring); //as stringstream for getline
+
+    getline(fullstringstream, username, '\n'); 
+    getline(fullstringstream, username, '\n'); //gets username
+
+    getline(fullstringstream, messageid, '\n'); //gets message id
+
+    fullstring.erase(0, 4); //erase DEL because not needed any more
+    strcpy(buffer, fullstring.c_str()); //update buffer
+
+    char* cusername = const_cast<char*>(username.c_str());
+
+    std::string usernamepath = (std::string) actualpath + "/" + username;
+    char* cusernamepath = const_cast<char*>(usernamepath.c_str());
+
+    std::cout << "USERNAMEPATH: " << usernamepath << std::endl; 
+
+    std::string messageidpath = usernamepath + "/" + messageid + ".txt"; 
+    char* cmessageidpath = const_cast<char*>(messageidpath.c_str());
+    
+    while ((entry = readdir(dir)) != NULL) {
+        if (strcmp(entry->d_name, ".") != 0 && strcmp(entry->d_name, "..") != 0) {
+            if(entry->d_type == 4) { //check if file is folder
+                if(strcmp(entry->d_name,cusername) == 0) { //check if folder exists
+                    folderexists = true; 
+                    
+                    if(remove(cmessageidpath) != 0) { //remove selected email
+                        std::cout << "This message ID does not exist" << std::endl; 
+                    } else {
+                        std::cout << "File successfully deleted" << std::endl; 
+                    }
+                } 
+            }
+        }
+    }
+    if(folderexists == false) { 
+        std::cout << "This user does not exist. The file cannot be deleted" << std::endl; 
+    }
+}
+
 
 void sendCommand(char buffer[BUF]){
 
@@ -259,7 +322,7 @@ void *clientCommunication(void *data)
         //stringsplit to get command (SEND, LIST, etc.)
         command = command.substr(0,command.find('\n'));
         strcpy(temp, command.c_str());
-
+        
         //switch for commands
         switch(buffer[0]) {
             case 'S':
@@ -270,11 +333,15 @@ void *clientCommunication(void *data)
                 std::cout << "LIST COMMAND" << std::endl;
                 listCommand(buffer, current_socket);
                 break;
+            case 'D':
+                std::cout << "DELETE COMMAND" << std::endl;
+                deleteCommand(buffer);
+                break;
             case 'Q': 
                 std::cout << "QUIT COMMAND" << std::endl; 
                 break; 
             default:
-                std::cout << "INPUT ERROR" << std::endl; 
+                std::cout << "INPUT ERROR" << std::endl; //should never happen due to clientside input validation
                 break; 
         }
 
