@@ -63,7 +63,7 @@ void listCommand(char buffer[BUF], void *data){
         }
     }
     fileCounter--;
-    fullList = std::to_string(fileCounter) + " messages"+ '\n';
+    fullList = std::to_string(fileCounter) + " message(s)"+ '\n';
     rewinddir(dir);
 
     while((entry = readdir(dir)) != NULL){
