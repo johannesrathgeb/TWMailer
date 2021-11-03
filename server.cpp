@@ -24,41 +24,36 @@ int create_socket = -1;
 void saveToFile(char buffer[BUF]){
 
     DIR* dir; 
-    DIR* dir2; 
     struct dirent *entry; 
-    struct dirent *entry2; 
 
     bool folderexists = false; 
 
-    std::cout << "HIER: " << buffer << std::endl;  
-
     std::string path = "messages";
-    char* cpath = const_cast<char*>(path.c_str());
+    char* cpath = const_cast<char*>(path.c_str()); //convert path to char* in order to work for realpath()
     
     char actualpath[PATH_MAX];
 
-    realpath(cpath, actualpath);
+    realpath(cpath, actualpath); //absolute path for creation of user folders
 
-    //std::cout << "actual path: " << actualpath << std::endl; 
 
     dir = opendir(actualpath);
     if(!dir) {
         std::cout << "Directory not found" << std::endl;
     }
 
-    std::string receiver; 
+    std::string receiver; //receiver of msg
 
-    std::string fullstring = (std::string) buffer; 
+    std::string fullstring = (std::string) buffer; //buffer with full message in string version 
     
-    std::stringstream fullstringstream (fullstring); 
+    std::stringstream fullstringstream (fullstring); //as stringstream for getline
 
 
     getline(fullstringstream, receiver, '\n'); 
     getline(fullstringstream, receiver, '\n'); 
     getline(fullstringstream, receiver, '\n'); 
 
-    fullstring.erase(0, 5);
-    strcpy(buffer, fullstring.c_str());
+    fullstring.erase(0, 5); //erase SEND because unnecessary in email
+    strcpy(buffer, fullstring.c_str()); //update buffer
 
 
     char* creceiver = const_cast<char*>(receiver.c_str());
@@ -69,16 +64,14 @@ void saveToFile(char buffer[BUF]){
 
     while ((entry = readdir(dir)) != NULL) {
         if (strcmp(entry->d_name, ".") != 0 && strcmp(entry->d_name, "..") != 0) {
-            if(entry->d_type == 4) {
-                if(strcmp(entry->d_name,creceiver) == 0) {
-                    //std::cout << "folder exists" << std::endl; 
+            if(entry->d_type == 4) { //check if file is folder
+                if(strcmp(entry->d_name,creceiver) == 0) { //check if folder exists
                     folderexists = true; 
                     
-                  
+                    //increment int of index file by one to keep track of received emails
                     std::fstream file(userpath + "/index.txt");
                     std::string str; 
                     std::getline(file, str);
-
                     int msgnumber = std::stoi(str);
                     msgnumber += 1; 
                     str = std::to_string(msgnumber);
@@ -88,6 +81,7 @@ void saveToFile(char buffer[BUF]){
                     file2 << str << '\n';
                     file2.close(); 
 
+                    //create file for new email
                     std::ofstream outfile (userpath + "/" + str + ".txt");
                     outfile << buffer << std::endl;
                     outfile.close();   
@@ -97,12 +91,15 @@ void saveToFile(char buffer[BUF]){
     }
 
     if(folderexists == false) {
-        mkdir(cuserpath, 0777);
+        
+        mkdir(cuserpath, 0777); //create directory (0777 = file permission in linux)
 
+        //create new index
         std::ofstream outfile (userpath + "/index.txt");
         outfile << 0 << std::endl;
         outfile.close();   
 
+        //create first file
         std::ofstream outfile2 (userpath + "/0.txt");
         outfile2 << buffer << std::endl;
         outfile2.close();   
@@ -110,16 +107,6 @@ void saveToFile(char buffer[BUF]){
 
     closedir(dir);
 
-   
-
-    /*
-    std::ofstream myFile;
-    myFile.open("test.txt", std::ios::app);
-    myFile << buffer << '\n';
-    myFile.close();
-    
-    std::cout << "!!Saved to file!!" << std::endl;
-    */
 }
 
 /*
@@ -213,19 +200,18 @@ void *clientCommunication(void *data)
             --size;
         }
 
-        //anker
-        //std::cout << "SERVERSIDE BUFFER: " << buffer << std::endl;
 
         buffer[size] = '\0';
 
 
         std::string command = (std::string) buffer; 
         char temp[BUF]; 
+
+        //stringsplit to get command (SEND, LIST, etc.)
         command = command.substr(0,command.find('\n'));
         strcpy(temp, command.c_str());
 
-        //std::cout << "test---- " << buffer[0] << " " << selection << std::endl; 
-
+        //switch for commands
         switch(buffer[0]) {
             case 'S':
                 std::cout << "SEND COMMAND" << std::endl; 
@@ -245,12 +231,6 @@ void *clientCommunication(void *data)
         else if(strcmp(buffer, "QUIT") == 0){
             abortRequested = true;
         }
-
-
-
-        
-        //std::cout << "Message received: " << buffer << std::endl;
-        //saveToFile(buffer);
 
         if (send(*current_socket, "OK", 3, 0) == -1) //send recieved message to socket
         {

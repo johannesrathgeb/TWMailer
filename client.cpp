@@ -40,6 +40,8 @@ void communicateWithServer(){
         char input[BUF]; 
         std::string fullstring = ""; 
 
+        //input content of email
+        //TODO: input/error handling
         fgets(input, BUF, stdin);
         std::cout << "INPUT:" << input << std::endl; 
         
@@ -60,13 +62,8 @@ void communicateWithServer(){
                 fullstring = fullstring + input;
             }
             
-            //std::cout << "Fullstring: " << fullstring << std::endl;
             strcpy(buffer, fullstring.c_str());
 
-            //std::cout << "CLIENT: " << buffer << std::endl; 
-
-
-            //std::cout << "BUFFER: " << buffer << std::endl; 
         }
 
         if (buffer != NULL) //input, saved to buffer with maximum length of BUF
