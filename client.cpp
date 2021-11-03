@@ -13,7 +13,7 @@ int create_socket;
 
 bool charValidation(char input[BUF]) {
 
-    for(int i = 0; i < strlen(input) - 1; i++) {
+    for(int i = 0; i < (int)strlen(input) - 1; i++) {
         
         if(islower(input[i]) || ((int) input[i] - '0' >= 0 && (int) input[i] - '0' <= 9 )) {
         } else {
@@ -25,8 +25,7 @@ bool charValidation(char input[BUF]) {
 
 bool checkIfNumber(char input[BUF]) {
     
-    std::cout << "MOINSEN" << std::endl; 
-    for(int i = 0; i < strlen(input) - 1; i++) {
+    for(int i = 0; i < (int)strlen(input) - 1; i++) {
 
         if((int) input[i] - '0' >= 0 && (int) input[i] - '0' <= 9 ) {
         } else {
@@ -35,6 +34,7 @@ bool checkIfNumber(char input[BUF]) {
     }
     return true; 
 }
+
 
 
 void communicateWithServer(){
@@ -212,8 +212,6 @@ void communicateWithServer(){
 //./twmailer-client <ip> <port>
 int main(int argc, char **argv){
     struct sockaddr_in address; //struct to work with addresses ports etc
-    int size, input;
-    char buffer[BUF];
 
     //Socket Creation
     if ((create_socket = socket(AF_INET, SOCK_STREAM, 0)) == -1) //socket of domain type IPv4(AF_INET), of type SOCK_STREAM(TCP reliable connection oriented) and automatically chosen protocol(0) ->returns -1 in case of errors
@@ -246,7 +244,6 @@ int main(int argc, char **argv){
    }
 
     std::cout << "Connection with server " << inet_ntoa(address.sin_addr) <<" established" << std::endl;
-
 
     communicateWithServer();
 

@@ -28,7 +28,6 @@ void listCommand(char buffer[BUF], void *data){
     std::string fullList;
     DIR* dir;
     struct dirent *entry;
-    bool folderexists = false;
     char* cpath = const_cast<char*>(dirName.c_str()); //convert path to char* in order to work for realpath()
     
     char actualpath[PATH_MAX];
@@ -45,8 +44,6 @@ void listCommand(char buffer[BUF], void *data){
 
     fullstring.erase(0, 5); //erase LIST because unnecessary in email
     strcpy(buffer, fullstring.c_str()); //update buffer
-
-    char* cuser = const_cast<char*>(user.c_str());
     
     std::string userpath = (std::string) actualpath + "/" + user;
     char* cuserpath = const_cast<char*>(userpath.c_str());
@@ -92,8 +89,6 @@ void listCommand(char buffer[BUF], void *data){
 void readCommand(char buffer[BUF], void *data){
     int *current_socket = (int *) data;
     DIR* dir;
-    struct dirent *entry;
-    bool folderexists = false;
     std::string fullMessage;
     char* cpath = const_cast<char*>(dirName.c_str()); //convert path to char* in order to work for realpath()
     
@@ -112,8 +107,6 @@ void readCommand(char buffer[BUF], void *data){
 
     fullstring.erase(0, 5); //erase LIST because unnecessary in email
     strcpy(buffer, fullstring.c_str()); //update buffer
-
-    char* cuser = const_cast<char*>(user.c_str());
     
     std::string userpath = (std::string) actualpath + "/" + user;
     char* cuserpath = const_cast<char*>(userpath.c_str());
@@ -180,9 +173,6 @@ void deleteCommand(char buffer[BUF]){
     char* cusername = const_cast<char*>(username.c_str());
 
     std::string usernamepath = (std::string) actualpath + "/" + username;
-    char* cusernamepath = const_cast<char*>(usernamepath.c_str());
-
-    std::cout << "USERNAMEPATH: " << usernamepath << std::endl; 
 
     std::string messageidpath = usernamepath + "/" + messageid + ".txt"; 
     char* cmessageidpath = const_cast<char*>(messageidpath.c_str());
@@ -444,7 +434,7 @@ void signalHandler(int sig){
     // g++ server.cpp -o server.exe
 //run exe
     // ./server.exe 80 ...
-
+    
 //?????????EINGABEFORMAT:
 //./twmailer-server <port> <mail-spool-directoryname>
 int main(int argc, char **argv){    
