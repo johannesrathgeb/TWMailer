@@ -8,10 +8,10 @@
 #include <fstream>
 #include <sstream>
 #include <string>
-
 #include <dirent.h>
 #include <filesystem>
 #include <sys/stat.h>
+#include <algorithm>
 
 #define PORT 6543
 #define BUF 1024
@@ -24,6 +24,7 @@ char buffer[BUF];
 void listCommand(char buffer[BUF], void *data){
     int *current_socket = (int *) data;
     int fileCounter = 0;
+    std::string fullList;
     DIR* dir;
     struct dirent *entry;
     bool folderexists = false;
@@ -58,35 +59,34 @@ void listCommand(char buffer[BUF], void *data){
 
     while ((entry = readdir(dir)) != NULL) {
         if (strcmp(entry->d_name, ".") != 0 && strcmp(entry->d_name, "..") != 0) {
-            //std::cout << entry->d_name << std::endl;
             fileCounter++;
         }
     }
     fileCounter--;
-    std::cout << fileCounter << std::endl;
+    fullList = std::to_string(fileCounter) + " messages"+ '\n';
     rewinddir(dir);
 
     while((entry = readdir(dir)) != NULL){
         if(strcmp(entry->d_name, ".") != 0 && strcmp(entry->d_name, "..") != 0 && strcmp (entry->d_name, "index.txt") !=0){
-            std::cout << entry->d_name << std::endl;
-            /*std::fstream file(userpath + "/index.txt");
+            std::string name = entry->d_name;
+            name.erase(std::remove(name.begin(), name.end(), '.'), name.end());
+            name.erase(std::remove(name.begin(), name.end(), 't'), name.end());
+            name.erase(std::remove(name.begin(), name.end(), 'x'), name.end());
+            std::fstream file(userpath + "/" + entry->d_name);
             std::string str; 
             std::getline(file, str);
-            int msgnumber = std::stoi(str);
-            msgnumber += 1; 
-            str = std::to_string(msgnumber);
+            std::getline(file, str);
+            std::getline(file, str);
+            fullList.append(name + ": " + str + '\n');
             file.close(); 
-
-            std::ofstream file2(userpath + "/index.txt", std::ofstream::trunc);
-            file2 << str << '\n';
-            file2.close(); 
-
-            //create file for new email
-            std::ofstream outfile (userpath + "/" + str + ".txt");
-            outfile << buffer << std::endl;
-            outfile.close();   */
         }
     }
+    if (send(*current_socket, fullList.c_str(), strlen(fullList.c_str()), 0) == -1) //send recieved message to socket
+    {
+        perror("send answer failed");
+        //return NULL;
+    }
+    memset(buffer, 0, strlen(buffer));
 }
 
 
@@ -179,28 +179,6 @@ void sendCommand(char buffer[BUF]){
 }
 
 
-char* recieveMessage(void *data){
-    int size;
-    int *current_socket = (int *)data;
-    //char buffer[BUF];
-    size = recv(*current_socket, buffer, BUF - 1, 0); //recieve message from socket and safe it to buffer
-    if (buffer[size - 2] == '\r' && buffer[size - 1] == '\n')
-    {
-        size -= 2;
-    }
-    else if (buffer[size - 1] == '\n')
-    {
-        --size;
-    }
-
-    if (send(*current_socket, "OK", 3, 0) == -1) //send recieved message to socket
-    {
-        perror("send answer failed");
-        //return NULL;
-    }
-    return buffer;
-}
-
 void *clientCommunication(void *data)
 {
     char buffer[BUF];
@@ -216,6 +194,7 @@ void *clientCommunication(void *data)
 
     do
     {
+        std::cout << "begin again" << std::endl;
         size = recv(*current_socket, buffer, BUF - 1, 0); //recieve message from socket and safe it to buffer
 
         std::cout << "SERVERSIDE: " << buffer << std::endl;  
@@ -265,6 +244,11 @@ void *clientCommunication(void *data)
             case 'S':
                 std::cout << "SEND COMMAND" << std::endl; 
                 sendCommand(buffer); 
+                if (send(*current_socket, "OK", 3, 0) == -1) //send recieved message to socket
+                {
+                    perror("send answer failed");
+                    return NULL;
+                }
                 break; 
             case 'L':
                 std::cout << "LIST COMMAND" << std::endl;
@@ -284,12 +268,7 @@ void *clientCommunication(void *data)
         if(strcmp(buffer, "QUIT") == 0){
             abortRequested = true;
         }
-
-        if (send(*current_socket, "OK", 3, 0) == -1) //send recieved message to socket
-        {
-            perror("send answer failed");
-            return NULL;
-        }
+        memset(buffer, 0, strlen(buffer));
     } while (strcmp(buffer, "QUIT") != 0 && !abortRequested);
 
     // closes/frees the descriptor if not already

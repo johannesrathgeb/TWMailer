@@ -117,6 +117,7 @@ void communicateWithServer(){
                     break;
                 }
             }
+            memset(buffer, 0, strlen(buffer));
         }
     } while (!isQuit);
 }
