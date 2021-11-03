@@ -11,6 +11,20 @@
 
 int create_socket;
 
+bool charValidation(char input[BUF]) {
+
+    for(int i = 0; i < strlen(input) - 1; i++) {
+        
+        //std::cout << "B: " << (int) input[i] - '0' << std::endl; 
+
+        if(islower(input[i]) || ((int) input[i] - '0' >= 0 && (int) input[i] - '0' <= 9 )) {
+        } else {
+            return false; 
+        }
+    }
+    return true; 
+}
+
 void communicateWithServer(){
     int size;
     char buffer[BUF];
@@ -38,26 +52,48 @@ void communicateWithServer(){
         std::cout << ">> ";
         
         char input[BUF]; 
+        std::string input_as_string; 
         std::string fullstring = ""; 
 
         //input content of email
         //TODO: input/error handling
-        fgets(input, BUF, stdin);
-        std::cout << "INPUT:" << input << std::endl; 
         
+        bool exitloop = false; 
+        do {
+            fgets(input, BUF, stdin);
+            std::cout << "INPUT:" << input << std::endl; 
+            input_as_string = (std::string) input; 
+            if(input_as_string == "SEND\n" || input_as_string == "LIST\n" || input_as_string == "READ\n" || input_as_string == "DEL\n" || input_as_string == "QUIT\n") {
+                exitloop = true; 
+            } else {
+                std::cout << "Invalid Input. <SEND|LIST|READ|DEL|QUIT>" << std::endl; 
+                std::cout << strlen(input) << std::endl; 
+            }
+
+        } while(exitloop == false);
+
         if((std::string) input == "SEND\n") {
             fullstring = fullstring + input; 
-            std::cout << "Sender:" << std::endl << ">> "; 
-            fgets(input, BUF, stdin);
+
+            do {
+                std::cout << "Sender(max. 8 characters):" << std::endl << ">> "; 
+                fgets(input, BUF, stdin);
+            } while(strlen(input) > 9 || !charValidation(input)); //anker
             fullstring = fullstring + input; 
-            std::cout << "Receiver:" << std::endl << ">> "; 
-            fgets(input, BUF, stdin);
+
+            do {
+                std::cout << "Receiver:" << std::endl << ">> "; 
+                fgets(input, BUF, stdin);
+            } while(strlen(input) > 9 || !charValidation(input));
             fullstring = fullstring + input;
-            std::cout << "Subject:" << std::endl << ">> "; 
-            fgets(input, BUF, stdin);
+
+            do {
+                std::cout << "Subject:" << std::endl << ">> "; 
+                fgets(input, BUF, stdin);
+            } while(strlen(input) > 81);
             fullstring = fullstring + input;
+
             std::cout << "Message:" << std::endl << ">> "; 
-            
             while((std::string) fgets(input, BUF, stdin) != ".\n") {
                 fullstring = fullstring + input;
             }
@@ -66,12 +102,14 @@ void communicateWithServer(){
         }
         else if((std::string) input == "LIST\n"){
             fullstring = fullstring + input;
+
+            
             std::cout << "Username:" << std::endl << ">> ";
             fgets(input, BUF, stdin);
 
             fullstring = fullstring + input;
             strcpy (buffer, fullstring.c_str());
-        } else if((std::string) input == "DEL\n") { //anker
+        } else if((std::string) input == "DEL\n") { 
             fullstring = fullstring + input; 
             std::cout << "Username:" << std::endl << ">> "; 
             fgets(input, BUF, stdin);

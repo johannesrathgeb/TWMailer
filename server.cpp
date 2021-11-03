@@ -152,7 +152,6 @@ void deleteCommand(char buffer[BUF]){
     }
 }
 
-
 void sendCommand(char buffer[BUF]){
 
     DIR* dir; 
