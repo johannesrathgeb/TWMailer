@@ -430,13 +430,11 @@ void signalHandler(int sig){
    }
 }
 
-//convert to exe:
-    // g++ server.cpp -o server.exe
-//run exe
-    // ./server.exe 80 ...
+// "make" to compile the program
     
-//?????????EINGABEFORMAT:
-//./twmailer-server <port> <mail-spool-directoryname>
+//run file: 
+//./server 80 messages
+
 int main(int argc, char **argv){    
     socklen_t addrlen;
     struct sockaddr_in address, cliaddress;

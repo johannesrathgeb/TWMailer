@@ -203,13 +203,12 @@ void communicateWithServer(){
     } while (!isQuit);
 }
 
-//convert to exe:
-    // g++ client.cpp -o client.exe
-//run exe
-    // ./client.exe 127.0.0.1 80
+// "make" to compile the program
 
-//EINGABEFORMAT:
-//./twmailer-client <ip> <port>
+//run file: 
+// ./client 127.0.0.1 80
+
+
 int main(int argc, char **argv){
     struct sockaddr_in address; //struct to work with addresses ports etc
 
