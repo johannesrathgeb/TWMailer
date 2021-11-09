@@ -13,7 +13,6 @@
 #include <sys/stat.h>
 #include <algorithm>
 
-#define PORT 6543
 #define BUF 1024
 
 bool abortRequested = false;
@@ -467,8 +466,9 @@ int main(int argc, char **argv){
     socklen_t addrlen;
     struct sockaddr_in address, cliaddress;
     int reuseValue = 1;
+    int port = atoi(argv[1]);
     dirName = argv[2];
-
+    std::cout << port << std::endl;
     //interacative attention signal tested on errors
     if (signal(SIGINT, signalHandler) == SIG_ERR)
     {
@@ -508,7 +508,7 @@ int main(int argc, char **argv){
     memset(&address, 0, sizeof(address)); //sets all bytes of address to 0
     address.sin_family = AF_INET; //sets address family to IPv4
     address.sin_addr.s_addr = INADDR_ANY; //binds to default IP address
-    address.sin_port = htons(PORT); // sets Port in network byte order
+    address.sin_port = htons(port); // sets Port in network byte order
 
     //makes port visible from outside
     if (bind(create_socket, (struct sockaddr *)&address, sizeof(address)) == -1)
