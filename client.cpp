@@ -209,7 +209,7 @@ void communicateWithServer(){
 // "make" to compile the program
 
 //run file: 
-// ./client 127.0.0.1 80
+// ./client 127.0.0.1 5432
 
 
 int main(int argc, char **argv){

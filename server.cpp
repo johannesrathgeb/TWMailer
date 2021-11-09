@@ -316,7 +316,6 @@ void sendCommand(char buffer[BUF]){
 
 }
 
-
 void *clientCommunication(void *data)
 {
     char buffer[BUF];
@@ -460,7 +459,7 @@ void signalHandler(int sig){
 // "make" to compile the program
     
 //run file: 
-//./server 80 messages
+//./server 5432 messages
 
 int main(int argc, char **argv){    
     socklen_t addrlen;
@@ -468,7 +467,6 @@ int main(int argc, char **argv){
     int reuseValue = 1;
     int port = atoi(argv[1]);
     dirName = argv[2];
-    std::cout << port << std::endl;
     //interacative attention signal tested on errors
     if (signal(SIGINT, signalHandler) == SIG_ERR)
     {
