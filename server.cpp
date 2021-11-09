@@ -51,8 +51,12 @@ void listCommand(char buffer[BUF], void *data){
     dir = opendir(cuserpath);
     if(!dir) {
         std::cout << "Directory not found" << std::endl;
+        if (send(*current_socket, "0 message(s)", 13, 0) == -1) //send recieved message to socket
+        {
+            perror("send answer failed");
+        }
+        return;
     }
-
 
     while ((entry = readdir(dir)) != NULL) {
         if (strcmp(entry->d_name, ".") != 0 && strcmp(entry->d_name, "..") != 0) {
@@ -114,6 +118,11 @@ void readCommand(char buffer[BUF], void *data){
     dir = opendir(cuserpath);
     if(!dir) {
         std::cout << "Directory not found" << std::endl;
+        if (send(*current_socket, "ERR\n", 5, 0) == -1) //send recieved message to socket
+        {
+            perror("send answer failed");
+        }
+        return;
     }
 
     std::fstream file(userpath + "/" + messageNumber + ".txt");
@@ -130,7 +139,14 @@ void readCommand(char buffer[BUF], void *data){
         fullMessage.append("Sender: "+sender + '\n'+  "Reciever: "+ receiver + '\n'+ "Subject: " + subject + '\n'+ "Message: " + message + '\n');
         file.close(); 
     }
-
+    else{
+        std::cout << "Message not found" << std::endl;
+        if (send(*current_socket, "ERR\n", 5, 0) == -1) //send recieved message to socket
+        {
+            perror("send answer failed");
+        }
+        return;
+    }
 
 
     if (send(*current_socket, fullMessage.c_str(), strlen(fullMessage.c_str()), 0) == -1) //send recieved message to socket
