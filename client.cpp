@@ -150,6 +150,7 @@ void communicateWithServer(){
             fullstring = fullstring + input; 
             
             strcpy(buffer, fullstring.c_str());
+            waitForOk = false;
         }
         else if((std::string) input == "QUIT\n"){
             strcpy(buffer, input);

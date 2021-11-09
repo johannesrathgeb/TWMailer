@@ -70,6 +70,7 @@ void listCommand(char buffer[BUF], void *data){
     while((entry = readdir(dir)) != NULL){
         if(strcmp(entry->d_name, ".") != 0 && strcmp(entry->d_name, "..") != 0 && strcmp (entry->d_name, "index.txt") !=0){
             std::string name = entry->d_name;
+            //remove .txt
             name.erase(std::remove(name.begin(), name.end(), '.'), name.end());
             name.erase(std::remove(name.begin(), name.end(), 't'), name.end());
             name.erase(std::remove(name.begin(), name.end(), 'x'), name.end());
@@ -157,11 +158,12 @@ void readCommand(char buffer[BUF], void *data){
     memset(buffer, 0, strlen(buffer)); 
 }
 
-void deleteCommand(char buffer[BUF]){ 
+void deleteCommand(char buffer[BUF], void *data){ 
+    int *current_socket = (int *) data;
     DIR* dir; 
     struct dirent *entry; 
 
-    bool folderexists = false; 
+    bool deleted = false; 
 
     std::string username;
     std::string messageid; 
@@ -200,20 +202,32 @@ void deleteCommand(char buffer[BUF]){
         if (strcmp(entry->d_name, ".") != 0 && strcmp(entry->d_name, "..") != 0) {
             if(entry->d_type == 4) { //check if file is folder
                 if(strcmp(entry->d_name,cusername) == 0) { //check if folder exists
-                    folderexists = true; 
                     
                     if(remove(cmessageidpath) != 0) { //remove selected email
                         std::cout << "This message ID does not exist" << std::endl; 
                     } else {
                         std::cout << "File successfully deleted" << std::endl; 
+                        deleted = true;
                     }
                 } 
             }
         }
     }
-    if(folderexists == false) { 
-        std::cout << "This user does not exist. The file cannot be deleted" << std::endl; 
+    if(deleted == true){
+        if (send(*current_socket, "OK", 3, 0) == -1) //send recieved message to socket
+        {
+            perror("send answer failed");
+            return;
+        }
     }
+    else{
+        if (send(*current_socket, "ERR", strlen("ERR"), 0) == -1) //send recieved message to socket
+        {
+            perror("send answer failed");
+            return;
+        }
+    }
+    memset(buffer, 0, strlen(buffer)); 
 }
 
 void sendCommand(char buffer[BUF]){
@@ -378,12 +392,7 @@ void *clientCommunication(void *data)
                 listCommand(buffer, current_socket);
                 break;
             case 'D':
-                deleteCommand(buffer);
-                if (send(*current_socket, "OK", 3, 0) == -1) //send recieved message to socket
-                {
-                    perror("send answer failed");
-                    return NULL;
-                }
+                deleteCommand(buffer, current_socket);
                 break;
             case 'Q': 
                 abortRequested = true;
