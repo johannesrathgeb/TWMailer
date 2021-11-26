@@ -12,6 +12,7 @@
 #include <filesystem>
 #include <sys/stat.h>
 #include <algorithm>
+#include <sys/wait.h>
 
 #define BUF 1024
 
@@ -22,6 +23,7 @@ char buffer[BUF];
 std::string dirName;
 
 void listCommand(char buffer[BUF], void *data){
+    
     int *current_socket = (int *) data;
     int fileCounter = 0;
     std::string fullList;
@@ -56,7 +58,6 @@ void listCommand(char buffer[BUF], void *data){
         }
         return;
     }
-
     while ((entry = readdir(dir)) != NULL) {
         if (strcmp(entry->d_name, ".") != 0 && strcmp(entry->d_name, "..") != 0) {
             fileCounter++;
@@ -268,7 +269,6 @@ void sendCommand(char buffer[BUF]){
     std::string receiverpath = (std::string) actualpath + "/" + receiver;
     char* creceiverpath = const_cast<char*>(receiverpath.c_str());
 
-
     while ((entry = readdir(dir)) != NULL) {
         if (strcmp(entry->d_name, ".") != 0 && strcmp(entry->d_name, "..") != 0) {
             if(entry->d_type == 4) { //check if file is folder
@@ -321,7 +321,7 @@ void *clientCommunication(void *data)
     char buffer[BUF];
     int size;
     int *current_socket = (int *)data;
-
+    bool isQuit = false;
     strcpy(buffer, "Welcome to myserver!\r\nPlease enter your commands...\r\n");
     if (send(*current_socket, buffer, strlen(buffer), 0) == -1) // send message to socket
     {
@@ -393,15 +393,14 @@ void *clientCommunication(void *data)
                 deleteCommand(buffer, current_socket);
                 break;
             case 'Q': 
-                abortRequested = true;
+                isQuit = true;
                 break; 
             default:
                 std::cout << "INPUT ERROR" << std::endl; //should never happen due to clientside input validation
                 break; 
         }
         memset(buffer, 0, strlen(buffer));
-    } while (strcmp(buffer, "QUIT") != 0 && !abortRequested);
-
+    } while (!isQuit);
     // closes/frees the descriptor if not already
     if (*current_socket != -1)
     {
@@ -467,6 +466,7 @@ int main(int argc, char **argv){
     int reuseValue = 1;
     int port = atoi(argv[1]);
     dirName = argv[2];
+    int parentid;
     //interacative attention signal tested on errors
     if (signal(SIGINT, signalHandler) == SIG_ERR)
     {
@@ -521,7 +521,8 @@ int main(int argc, char **argv){
         perror("listen error");
         return EXIT_FAILURE;
     }
-
+    parentid = getpid();
+            //while parentID
     while (!abortRequested)
     {
         std::cout << "Waiting for connections..." << std::endl;
@@ -542,9 +543,29 @@ int main(int argc, char **argv){
             }
             break;
         }
-    //                                      client address in ASCII                     port in host byte order
-        std::cout << "Client connected from " << inet_ntoa(cliaddress.sin_addr) << ":" << ntohs(cliaddress.sin_port) << "..." << std::endl;
-        clientCommunication(&new_socket); // returnValue can be ignored
-        new_socket = -1;
+
+        if(getpid() != parentid){
+            continue;
+        }
+        switch(fork())	{
+	    case -1: 
+		    printf("Child konnte nicht gestartet werden.");
+		    exit(EXIT_FAILURE);
+		    break;
+	    case 0:
+            //                                      client address in ASCII                     port in host byte order
+            std::cout << "Client connected from " << inet_ntoa(cliaddress.sin_addr) << ":" << ntohs(cliaddress.sin_port) << "..." << std::endl;
+            std::cout << "CreateSocket: " << create_socket << " NewSocket: " << new_socket << std::endl;
+            clientCommunication(&new_socket); // returnValue can be ignored
+            new_socket = -1;
+            abortRequested=true;
+		    break;
+	    default:
+		    break;
+	    }    
     }
 }
+
+
+
+                                                                                                                                                //TODO abortRequested evtl sinnlos
