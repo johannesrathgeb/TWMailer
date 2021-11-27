@@ -9,6 +9,7 @@
 #define BUF 1024
 
 int create_socket;
+bool loggedin = false; 
 
 bool charValidation(char input[BUF]) {
 
@@ -60,7 +61,8 @@ void communicateWithServer(){
         //communication with server
     do
     {
-        std::cout << "<SEND|LIST|READ|DEL|QUIT>" << std::endl; 
+        std::cout << "<SEND|LIST|READ|DEL|QUIT|LOGIN>" << std::endl; 
+        std::cout << "if not logged in: <LOGIN|QUIT>" << std::endl; 
         std::cout << ">> ";
         
         char input[BUF]; 
@@ -77,10 +79,13 @@ void communicateWithServer(){
             fgets(input, BUF, stdin);
             std::cout << "INPUT:" << input << std::endl; 
             input_as_string = (std::string) input; 
-            if(input_as_string == "SEND\n" || input_as_string == "LIST\n" || input_as_string == "READ\n" || input_as_string == "DEL\n" || input_as_string == "QUIT\n") {
+            if((input_as_string == "SEND\n" || input_as_string == "LIST\n" || input_as_string == "READ\n" || input_as_string == "DEL\n" || input_as_string == "QUIT\n" || input_as_string == "LOGIN\n") && loggedin == true) {
+                exitloop = true; 
+            } else if((input_as_string == "LOGIN\n" || input_as_string == "QUIT\n") && loggedin == false) {
                 exitloop = true; 
             } else {
-                std::cout << "Invalid Input. <SEND|LIST|READ|DEL|QUIT>" << std::endl; 
+                std::cout << "Invalid Input. <SEND|LIST|READ|DEL|QUIT|LOGIN>" << std::endl; 
+                std::cout << "if not logged in: <LOGIN|QUIT>" << std::endl; 
             }
 
         } while(exitloop == false);
@@ -153,7 +158,22 @@ void communicateWithServer(){
         }
         else if((std::string) input == "QUIT\n"){
             strcpy(buffer, input);
+        } else if((std::string) input == "LOGIN\n"){
+           fullstring = fullstring + "POGIN\n"; 
+
+            std::cout << "username" << std::endl << ">> "; 
+            fgets(input, BUF, stdin);
+            fullstring = fullstring + input; 
+
+            std::cout << "password" << std::endl << ">> "; 
+            fgets(input, BUF, stdin);
+            fullstring = fullstring + input; 
+
+            std::cout << fullstring << std::endl; 
+            strcpy(buffer, fullstring.c_str());
         }
+
+
 
         if (buffer != NULL) //input, saved to buffer with maximum length of BUF
         {
@@ -209,7 +229,7 @@ void communicateWithServer(){
 // "make" to compile the program
 
 //run file: 
-// ./client 127.0.0.1 5432
+// ./client 127.0.0.1 80
 
 
 int main(int argc, char **argv){
