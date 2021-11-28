@@ -629,7 +629,8 @@ int main(int argc, char **argv){
     int reuseValue = 1;
     int port = atoi(argv[1]);
     dirName = argv[2];
-    int parentid;
+    pid_t parentid;
+    int status = 0;
     //interacative attention signal tested on errors
     if (signal(SIGINT, signalHandler) == SIG_ERR)
     {
@@ -725,8 +726,9 @@ int main(int argc, char **argv){
 		    break;
 	    default:
 		    break;
-	    }    
+	    }
     }
+    while ((wait(&status)) > 0);
 }
 
 

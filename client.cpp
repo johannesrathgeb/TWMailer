@@ -61,8 +61,12 @@ void communicateWithServer(){
         //communication with server
     do
     {
-        std::cout << "<SEND|LIST|READ|DEL|QUIT|LOGIN>" << std::endl; 
-        std::cout << "if not logged in: <LOGIN|QUIT>" << std::endl; 
+        if(loggedin){
+            std::cout << "<SEND|LIST|READ|DEL|QUIT|LOGIN>" << std::endl; 
+        }
+        else{
+            std::cout << "<LOGIN|QUIT>" << std::endl; 
+        }
         std::cout << ">> ";
         
         char input[BUF]; 
@@ -214,6 +218,7 @@ void communicateWithServer(){
             {
                 buffer[size] = '\0';
                 std::cout << "<< " << buffer << std::endl;
+                std::cout << strcmp("LOGIN SUCCESSFUL", buffer) << std::endl;
                 if(waitForOk){
                     if (strcmp("OK", buffer) != 0)
                     {
@@ -221,10 +226,10 @@ void communicateWithServer(){
                         break;
                     }
                 }
-                else if(strcmp("LOGIN SUCCESSFUL", buffer) != 0){
-                    std::cout << "jawoi" << std::endl;
+                else if(strcmp("LOGIN SUCCESSFUL", buffer) == 0){
                     loggedin = true;
                 }
+                
             }
             memset(buffer, 0, strlen(buffer));
         }
