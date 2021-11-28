@@ -67,6 +67,7 @@ void communicateWithServer(){
         else{
             std::cout << "<LOGIN|QUIT>" << std::endl; 
         }
+        //TEST
         std::cout << ">> ";
         
         char input[BUF]; 
