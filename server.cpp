@@ -720,3 +720,4 @@ int main(int argc, char **argv){
     //wait for all child processes to finish
     while ((wait(&status)) > 0);
 }
+//ENDE
