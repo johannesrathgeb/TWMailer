@@ -34,14 +34,13 @@ std::string ldapCommand(char buffer[BUF]) {
     
     std::stringstream fullstringstream (fullstring); //as stringstream for getline
 
-
     std::string uname;
-    getline(fullstringstream, uname, '\n'); 
+    getline(fullstringstream, uname, '\n'); //get username
     
     std::string pw;
-    getline(fullstringstream, pw, '\n'); 
+    getline(fullstringstream, pw, '\n'); //get password
     
-            ////////////////////////////////////////////////////////////////////////////
+   ////////////////////////////////////////////////////////////////////////////
    // LDAP config
    // anonymous bind with user and pw empty
    const char *ldapUri = "ldap://ldap.technikum-wien.at:389";
@@ -56,14 +55,12 @@ std::string ldapCommand(char buffer[BUF]) {
     sprintf(ldapBindUser, "uid=%s,ou=people,dc=technikum-wien,dc=at", rawLdapUser);
     printf("user set to: %s\n", ldapBindUser);
 
-   
    char ldapBindPassword[256];
 
    strcpy(ldapBindPassword,pw.c_str()); //password received by function gets copied into ldapBindPassword to be compared
 
    // general
    int rc = 0; // return code
-
    ////////////////////////////////////////////////////////////////////////////
    // setup LDAP connection
    // https://linux.die.net/man/3/ldap_initialize
@@ -75,7 +72,6 @@ std::string ldapCommand(char buffer[BUF]) {
       return "error";
    }
    printf("connected to LDAP server %s\n", ldapUri);
-
    ////////////////////////////////////////////////////////////////////////////
    // set verison options
    // https://linux.die.net/man/3/ldap_set_option
@@ -90,7 +86,6 @@ std::string ldapCommand(char buffer[BUF]) {
       ldap_unbind_ext_s(ldapHandle, NULL, NULL);
       return "error";
    }
-
    ////////////////////////////////////////////////////////////////////////////
    // start connection secure (initialize TLS)
    // https://linux.die.net/man/3/ldap_start_tls_s
@@ -117,7 +112,6 @@ std::string ldapCommand(char buffer[BUF]) {
       ldap_unbind_ext_s(ldapHandle, NULL, NULL);
       return "error";
    }
-
    ////////////////////////////////////////////////////////////////////////////
    // bind credentials
    // https://linux.die.net/man/3/lber-types
@@ -279,7 +273,6 @@ void readCommand(char buffer[BUF], void *data){
         }
         return;
     }
-
 
     if (send(*current_socket, fullMessage.c_str(), strlen(fullMessage.c_str()), 0) == -1) //send recieved message to socket
     {
@@ -494,9 +487,7 @@ void *clientCommunication(void *data)
             --size;
         }
 
-
         buffer[size] = '\0';
-
 
         std::string command = (std::string) buffer; 
         char temp[BUF]; 
@@ -720,4 +711,3 @@ int main(int argc, char **argv){
     //wait for all child processes to finish
     while ((wait(&status)) > 0);
 }
-//ENDE

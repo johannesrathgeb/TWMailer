@@ -35,8 +35,6 @@ bool checkIfNumber(char input[BUF]) {
     return true; 
 }
 
-
-
 void communicateWithServer(){
     int size;
     char buffer[BUF];
@@ -67,16 +65,12 @@ void communicateWithServer(){
         else{
             std::cout << "<LOGIN|QUIT>" << std::endl; 
         }
-        //TEST
         std::cout << ">> ";
         
         char input[BUF]; 
         std::string input_as_string; 
         std::string fullstring = ""; 
 
-        //input content of email
-        //TODO: input/error handling
-        
         bool exitloop = false; 
         bool waitForOk = false;
 
@@ -102,13 +96,6 @@ void communicateWithServer(){
         waitForOk = true;
         if((std::string) input == "SEND\n") {
             fullstring = fullstring + input; 
-            /*
-            do {
-                std::cout << "Sender(max. 8 characters [a-z][0-9]):" << std::endl << ">> "; 
-                fgets(input, BUF, stdin);
-            } while(strlen(input) > 9 || !charValidation(input)); //anker
-            fullstring = fullstring + input; 
-            */
             do {
                 std::cout << "Receiver(max. 8 characters [a-z][0-9]):" << std::endl << ">> "; 
                 fgets(input, BUF, stdin);
@@ -182,8 +169,6 @@ void communicateWithServer(){
             waitForOk = false;
         }
 
-
-
         if (buffer != NULL) //input, saved to buffer with maximum length of BUF
         {
             int size = strlen(buffer);
@@ -244,7 +229,6 @@ void communicateWithServer(){
 //run file: 
 // ./client 127.0.0.1 80
 
-
 int main(int argc, char **argv){
     struct sockaddr_in address; //struct to work with addresses ports etc
     int port =  atoi(argv[2]);
@@ -255,7 +239,6 @@ int main(int argc, char **argv){
         perror("Socket error");
         return EXIT_FAILURE;
     }
-
 
     //Address init
     memset(&address, 0, sizeof(address)); //sets each number from address to 0
@@ -271,7 +254,6 @@ int main(int argc, char **argv){
         inet_aton(argv[1], &address.sin_addr); //converts integer and dot notation to binary data
     }
     
-
     //Create connection
     if (connect(create_socket,(struct sockaddr *)&address, sizeof(address)) == -1) //Opens connection on socket with address
    {
