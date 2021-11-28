@@ -170,11 +170,9 @@ void communicateWithServer(){
             fgets(input, BUF, stdin);
             fullstring = fullstring + input; 
 
-            std::cout << "password" << std::endl << ">> "; 
-            fgets(input, BUF, stdin);
-            fullstring = fullstring + input; 
+            char *password = getpass("password\n>> ");
+            fullstring = fullstring + password; 
 
-            std::cout << fullstring << std::endl; 
             strcpy(buffer, fullstring.c_str());
             waitForOk = false;
         }
