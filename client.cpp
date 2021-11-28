@@ -218,7 +218,6 @@ void communicateWithServer(){
             {
                 buffer[size] = '\0';
                 std::cout << "<< " << buffer << std::endl;
-                std::cout << strcmp("LOGIN SUCCESSFUL", buffer) << std::endl;
                 if(waitForOk){
                     if (strcmp("OK", buffer) != 0)
                     {
