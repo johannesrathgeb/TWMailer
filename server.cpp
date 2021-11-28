@@ -540,10 +540,18 @@ void *clientCommunication(void *data)
                 ldapretval = ldapCommand(buffer, current_socket); 
 
                 if(ldapretval == "error") {
-                    //return error to the client -> login failed
+                    if (send(*current_socket, "ERR", 4, 0) == -1) //send recieved message to socket
+                    {
+                        perror("send answer failed");
+                        return NULL;
+                    }
                 } else {
                     loggedinname = ldapretval; 
-                    //return success to the client -> set bool loggedin on clientside to true
+                    if (send(*current_socket, "LOGIN SUCCESSFUL", 17, 0) == -1) //send recieved message to socket
+                    {
+                        perror("send answer failed");
+                        return NULL;
+                    }
                 }
                 std::cout << "Testoutput" << std::endl; 
                 break;

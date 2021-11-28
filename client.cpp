@@ -171,6 +171,7 @@ void communicateWithServer(){
 
             std::cout << fullstring << std::endl; 
             strcpy(buffer, fullstring.c_str());
+            waitForOk = false;
         }
 
 
@@ -219,6 +220,10 @@ void communicateWithServer(){
                         fprintf(stderr, "<< Server error occured, abort\n");
                         break;
                     }
+                }
+                else if(strcmp("LOGIN SUCCESSFUL", buffer) != 0){
+                    std::cout << "jawoi" << std::endl;
+                    loggedin = true;
                 }
             }
             memset(buffer, 0, strlen(buffer));
