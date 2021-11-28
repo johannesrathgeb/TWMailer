@@ -398,12 +398,12 @@ void sendCommand(char buffer[BUF]){
     
     std::stringstream fullstringstream (fullstring); //as stringstream for getline
 
-
-    getline(fullstringstream, receiver, '\n'); 
     getline(fullstringstream, receiver, '\n'); 
     getline(fullstringstream, receiver, '\n'); 
 
     fullstring.erase(0, 5); //erase SEND because unnecessary in email
+    //insert loggedin name
+    fullstring = loggedinname + '\n' + fullstring; //add name of logged in user as sender 
     strcpy(buffer, fullstring.c_str()); //update buffer
 
 

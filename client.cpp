@@ -97,13 +97,13 @@ void communicateWithServer(){
         waitForOk = true;
         if((std::string) input == "SEND\n") {
             fullstring = fullstring + input; 
-
+            /*
             do {
                 std::cout << "Sender(max. 8 characters [a-z][0-9]):" << std::endl << ">> "; 
                 fgets(input, BUF, stdin);
             } while(strlen(input) > 9 || !charValidation(input)); //anker
             fullstring = fullstring + input; 
-
+            */
             do {
                 std::cout << "Receiver(max. 8 characters [a-z][0-9]):" << std::endl << ">> "; 
                 fgets(input, BUF, stdin);
