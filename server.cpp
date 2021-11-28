@@ -24,7 +24,7 @@ char buffer[BUF];
 std::string dirName;
 std::string loggedinname = ""; 
 
-std::string ldapCommand(char buffer[BUF], void *data) {
+std::string ldapCommand(char buffer[BUF]) {
     
     //int *current_socket = (int *) data;
 
@@ -50,22 +50,16 @@ std::string ldapCommand(char buffer[BUF], void *data) {
    // recv username
    char ldapBindUser[256];
    char rawLdapUser[128];
-   
-    /*FETTY!!!
-    Hier musst du den User ("if20bxxx") übergeben oder empfangen und mit "strcpy" auf den "rawLdapUser" kopieren
-    */
 
-    strcpy(rawLdapUser,uname.c_str());
+    strcpy(rawLdapUser,uname.c_str()); //username received by function gets copied into ldapBindPassword to be compared
 
     sprintf(ldapBindUser, "uid=%s,ou=people,dc=technikum-wien,dc=at", rawLdapUser);
     printf("user set to: %s\n", ldapBindUser);
 
    
    char ldapBindPassword[256];
-    /*FETTY!!!
-    Hier musst du das Password übergeben oder empfangen und mit "strcpy" auf "ldapBindPassword" kopieren
-    */
-   strcpy(ldapBindPassword,pw.c_str());
+
+   strcpy(ldapBindPassword,pw.c_str()); //password received by function gets copied into ldapBindPassword to be compared
 
    // general
    int rc = 0; // return code
@@ -156,13 +150,7 @@ std::string ldapCommand(char buffer[BUF], void *data) {
       ldap_unbind_ext_s(ldapHandle, NULL, NULL);
       return "error";
    } 
-
-   std::cout << "RICHTIGE DATEN" << std::endl; 
-   return uname; 
-   /*FETTY!!!
-   wenn du hier angekommen bist dann war dein LDAP bind erfolgreich und du kannst den Login abschließen und den User speichern für den "SEND" command
-   */
-  
+   return uname;   
 }
 
 void listCommand(char buffer[BUF], void *data){
@@ -537,7 +525,7 @@ void *clientCommunication(void *data)
                 deleteCommand(buffer, current_socket);
                 break;
             case 'P':
-                ldapretval = ldapCommand(buffer, current_socket); 
+                ldapretval = ldapCommand(buffer); 
 
                 if(ldapretval == "error") {
                     if (send(*current_socket, "ERR", 4, 0) == -1) //send recieved message to socket
