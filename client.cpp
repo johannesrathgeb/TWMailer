@@ -89,8 +89,13 @@ void communicateWithServer(){
             } else if((input_as_string == "LOGIN\n" || input_as_string == "QUIT\n") && loggedin == false) {
                 exitloop = true; 
             } else {
-                std::cout << "Invalid Input. <SEND|LIST|READ|DEL|QUIT|LOGIN>" << std::endl; 
-                std::cout << "if not logged in: <LOGIN|QUIT>" << std::endl; 
+                if(loggedin){
+                    std::cout << "Invalid Input. <SEND|LIST|READ|DEL|QUIT|LOGIN>" << std::endl; 
+                }
+                else{
+                    std::cout << "Invalid Input. <LOGIN|QUIT>" << std::endl; 
+                }
+                
             }
 
         } while(exitloop == false);

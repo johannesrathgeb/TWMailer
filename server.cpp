@@ -699,6 +699,7 @@ int main(int argc, char **argv){
         if(getpid() != parentid){
             continue;
         }
+        //create child for every client connected and make them leave loop after that
         switch(fork())	{
 	    case -1: 
 		    printf("Child konnte nicht gestartet werden.");
@@ -716,12 +717,6 @@ int main(int argc, char **argv){
 		    break;
 	    }
     }
+    //wait for all child processes to finish
     while ((wait(&status)) > 0);
 }
-
-
-        
-        
-        
-       
-                                                                                                                                               //TODO abortRequested evtl sinnlos
