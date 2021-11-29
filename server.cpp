@@ -532,7 +532,6 @@ void *clientCommunication(void *data)
                         return NULL;
                     }
                 }
-                std::cout << "Testoutput" << std::endl; 
                 break;
             case 'Q': 
                 isQuit = true;
@@ -699,7 +698,6 @@ int main(int argc, char **argv){
 	    case 0:
             //                                      client address in ASCII                     port in host byte order
             std::cout << "Client connected from " << inet_ntoa(cliaddress.sin_addr) << ":" << ntohs(cliaddress.sin_port) << "..." << std::endl;
-            std::cout << "CreateSocket: " << create_socket << " NewSocket: " << new_socket << std::endl;
             clientCommunication(&new_socket); // returnValue can be ignored
             new_socket = -1;
             abortRequested=true;
